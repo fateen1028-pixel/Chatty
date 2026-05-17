@@ -1,0 +1,10 @@
+package com.fateen.chatapplicationbackend.repository;
+
+import com.fateen.chatapplicationbackend.models.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UserActionRepo extends JpaRepository<User,Long> {
+    User findByUsername(String username);
+}
