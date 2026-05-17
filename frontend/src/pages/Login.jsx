@@ -34,11 +34,18 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 transition-colors">
-      <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 backdrop-blur-lg bg-opacity-90 dark:bg-opacity-90 border border-slate-100 dark:border-slate-700">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-[#0B0C0E] transition-colors relative overflow-hidden">
+      {/* Decorative blurred background shapes */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="w-full max-w-md bg-white/80 dark:bg-[#111113]/80 rounded-[2rem] shadow-2xl p-8 sm:p-10 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/80 z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">Welcome Back</h1>
-          <p className="text-slate-500 dark:text-slate-400">Sign in to continue to ChatApp</p>
+          <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-500/30 transform -rotate-3">
+             <span className="text-3xl font-bold transform rotate-3">C</span>
+          </div>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-2 tracking-tight">Welcome Back</h1>
+          <p className="text-slate-500 dark:text-slate-400 font-medium">Sign in to continue to ChatApp</p>
         </div>
 
         {error && <div className="mb-4 text-red-500 text-center text-sm">{error}</div>}
