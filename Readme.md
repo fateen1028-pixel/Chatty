@@ -33,7 +33,7 @@ A full-stack real-time chat application featuring user authentication, real-time
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v16+)
-- [Java Development Kit (JDK)](https://adoptium.net/) (v17+)
+- [Java Development Kit (JDK)](https://adoptium.net/) (v21+)
 
 ### Setup the Backend
 

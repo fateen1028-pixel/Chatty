@@ -61,6 +61,8 @@ public class SecurityConfig {
                                 "/ws/**"
                         ).permitAll()
 
+                        .requestMatchers("/presence/**").authenticated()
+
                         .requestMatchers(
                                 HttpMethod.OPTIONS,
                                 "/**"
