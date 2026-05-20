@@ -1,98 +1,459 @@
-# Real-Time Chat Application
+# Real-Time Chat Application 💬
 
-A full-stack real-time chat application featuring user authentication, real-time messaging using WebSockets, and a modern responsive frontend.
+A full-stack real-time chat application built using **Spring Boot**, **WebSockets**, and **React**.  
+The system supports secure JWT authentication, live messaging, online presence tracking, message delivery/read receipts, and a modern responsive UI.
 
-## 🚀 Features
+---
 
-- **User Authentication**: Secure Login & Registration using JWT (JSON Web Tokens).
-- **Real-Time Messaging**: Instant message delivery using WebSockets.
-- **Chat History**: Persists and displays previous conversations with users.
-- **Modern UI**: Intuitive and responsive chat interface built with React.
-- **Theming**: Support for custom theming (Dark/Light mode).
+# 🚀 Features
 
-## 🛠️ Tech Stack
+## 🔐 Authentication & Security
 
-### Backend
-- **Java & Spring Boot**: Core backend framework.
-- **Spring Security & JWT**: For securing endpoints and user authentication.
-- **Spring WebSockets**: For real-time bi-directional communication.
-- **Maven**: Dependency management.
+- User Registration & Login
+- JWT-based authentication
+- Protected REST APIs
+- Secured WebSocket connections
+- Spring Security integration
+- Stateless backend authentication
 
-### Frontend
-- **React**: UI library.
-- **Vite**: Fast frontend build tool.
-- **Context API**: State management (e.g., ThemeContext).
-- **CSS / Tailwind**: Modern styling approaches.
+---
 
-## 📂 Project Structure
+## 💬 Real-Time Messaging
 
-- `/backend/ChatApplicationBackend/`: Contains the Spring Boot APIs, WebSocket config, and auth logic.
-- `/frontend/`: Contains the Vite + React frontend application with Chat, Login, and Register components.
+- Instant messaging using STOMP over WebSockets
+- Bi-directional communication
+- Real-time conversation updates
+- Message persistence in database
+- Recent chats sidebar
+- Conversation history loading
 
-## ⚙️ Getting Started
+---
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v16+)
-- [Java Development Kit (JDK)](https://adoptium.net/) (v21+)
+## 🟢 Presence System
 
-### Setup the Backend
+Tracks user online/offline status in real-time.
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend/ChatApplicationBackend
-   ```
-2. Check your environment variables in `src/main/resources/application.properties`.
-3. Run the Spring Boot application:
-   ```bash
-   ./mvnw spring-boot:run
-   ```
+### Features
 
-### Setup the Frontend
+- Online user detection
+- Real-time presence broadcasting
+- Multi-tab/session support
+- Instant UI updates for online users
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+### Example
 
-## � API Endpoints
+```text
+John → Online now
+Alex → Offline
+```
 
-### Authentication
-- `POST /auth/register`: Register a new user. Accepts `RegisterRequest` body.
-- `POST /auth/login`: Authenticate and receive a JWT token. Accepts `LoginRequest` body.
+---
 
-### Messages
-*Note: All message endpoints require a valid JWT token.*
-- `GET /messages/recent-chats`: Fetch the current user's recently active chat threads.
-- `GET /messages/{receiverId}`: Fetch complete conversation history with a specific user.
-- `GET /messages/chat/{receiverId}`: (Alternative) fetch chat messages between the current user and the specified receiver.
-- `POST /messages/{receiverId}`: Send a message to the specified user over HTTP. Accepts `MessageDTO` body.
+## ✅ Message Status System
 
-### User Actions
-*Note: All user endpoints require a valid JWT token.*
-- `GET /user-data`: Retrieve the authenticated user's profile details.
-- `GET /receiver/search/{receiverUsername}`: Search for a specific user to start a conversation.
+Implemented full real-time message lifecycle tracking.
 
-## 🔌 WebSockets
+### Supported Statuses
 
-The real-time messaging operates over STOMP over WebSockets. Connections require authentication via a JWT token.
+| Status | Meaning |
+|---|---|
+| SENT | Message stored successfully |
+| DELIVERED | Receiver received the message |
+| READ | Receiver opened/read the message |
 
-- **Endpoint**: `/ws`
-- **Publish Destination**: `/app/chat` (Payload: `{ receiverId, message }`)
-- **Subscribe Destination**: `/user/queue/messages` (To receive incoming messages from others and confirmations of your own).
+### UI Example
 
-## �🔒 Security
+```text
+✓        -> SENT
+✓✓       -> DELIVERED
+✓✓ Read  -> READ
+```
 
-- All API endpoints (except login/register) and WebSockets connections require a valid JWT token.
-- Web requests are intercepted using `JwtFilter` and WebSockets via `WebSocketAuthInterceptor`.
+### Real-Time Receipts
 
-## 📜 License
+- Delivery acknowledgements
+- Read receipts
+- Live sender updates via WebSocket
 
-This project is open-source and licensed under the MIT License.
+---
+
+## 🧠 Smart Frontend State Management
+
+- Cached conversation state
+- Optimized WebSocket updates
+- Duplicate message prevention
+- Real-time sidebar refresh
+- Auto-scroll behavior
+- Responsive mobile layout
+
+---
+
+## 🎨 Modern UI
+
+- Responsive chat interface
+- Dark mode support
+- Clean messaging layout
+- Online indicators
+- Modern Tailwind styling
+- Mobile-friendly design
+
+---
+
+# 🛠️ Tech Stack
+
+---
+
+## Backend
+
+- Java 21
+- Spring Boot
+- Spring Security
+- Spring WebSocket
+- STOMP Protocol
+- JWT Authentication
+- Spring Data JPA
+- Hibernate
+- Maven
+
+---
+
+## Frontend
+
+- React
+- Vite
+- Tailwind CSS
+- Context API
+- STOMP.js
+- SockJS
+- Lucide Icons
+
+---
+
+# 📂 Project Structure
+
+```text
+/backend/ChatApplicationBackend/
+│
+├── config/
+├── controller/
+├── models/
+│   ├── dto/
+│   └── enums/
+├── presence/
+├── repository/
+├── security/
+├── services/
+└── websocket/
+
+/frontend/
+│
+├── components/
+├── pages/
+├── context/
+├── services/
+└── assets/
+```
+
+---
+
+# ⚙️ Getting Started
+
+---
+
+# Prerequisites
+
+Install:
+
+- Node.js v16+
+- Java JDK 21+
+- Maven
+- MySQL/PostgreSQL (depending on your configuration)
+
+---
+
+# 🔧 Backend Setup
+
+Navigate to backend:
+
+```bash
+cd backend/ChatApplicationBackend
+```
+
+Configure:
+
+```properties
+src/main/resources/application.properties
+```
+
+Run backend:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Backend runs on:
+
+```text
+http://localhost:8080
+```
+
+---
+
+# 🎨 Frontend Setup
+
+Navigate to frontend:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run frontend:
+
+```bash
+npm run dev
+```
+
+Frontend runs on:
+
+```text
+http://localhost:5173
+```
+
+---
+
+# 🔌 WebSocket Architecture
+
+The application uses:
+
+```text
+STOMP over WebSockets
+```
+
+for real-time communication.
+
+---
+
+# WebSocket Endpoint
+
+```text
+/ws
+```
+
+---
+
+# Publish Destinations
+
+| Destination | Purpose |
+|---|---|
+| `/app/chat` | Send new message |
+| `/app/chat.read` | Mark messages as read |
+| `/app/chat.delivered` | Mark messages as delivered |
+
+---
+
+# Subscribe Destinations
+
+| Destination | Purpose |
+|---|---|
+| `/user/queue/messages` | Receive chat messages |
+| `/user/queue/read` | Receive read receipts |
+| `/user/queue/delivered` | Receive delivery receipts |
+| `/topic/presence` | Presence updates |
+
+---
+
+# 📡 Presence System Flow
+
+```text
+User connects
+    ↓
+WebSocket authenticated
+    ↓
+User marked ONLINE
+    ↓
+Presence broadcast sent
+    ↓
+Frontend updates UI
+```
+
+Disconnect flow:
+
+```text
+User disconnects
+    ↓
+Session count decremented
+    ↓
+If no active sessions:
+    User marked OFFLINE
+```
+
+---
+
+# 📨 Message Flow
+
+```text
+Sender sends message
+    ↓
+Backend stores message
+    ↓
+Status = SENT
+    ↓
+Receiver gets message via WebSocket
+    ↓
+Receiver sends DELIVERED acknowledgement
+    ↓
+Status = DELIVERED
+    ↓
+Receiver opens chat
+    ↓
+Receiver sends READ acknowledgement
+    ↓
+Status = READ
+```
+
+---
+
+# 🗄️ Database Model
+
+## Message Entity
+
+```text
+Message
+├── id
+├── sender
+├── receiver
+├── messageText
+├── status
+└── createdAt
+```
+
+---
+
+# Message Status Enum
+
+```java
+public enum MessageStatus {
+    SENT,
+    DELIVERED,
+    READ
+}
+```
+
+---
+
+# 📡 REST API Endpoints
+
+---
+
+# 🔐 Authentication
+
+## Register
+
+```http
+POST /auth/register
+```
+
+## Login
+
+```http
+POST /auth/login
+```
+
+Returns JWT token.
+
+---
+
+# 💬 Messages
+
+All endpoints require JWT authentication.
+
+## Get Recent Chats
+
+```http
+GET /messages/recent-chats
+```
+
+## Get Conversation
+
+```http
+GET /messages/chat/{receiverId}
+```
+
+## Send HTTP Message
+
+```http
+POST /messages/{receiverId}
+```
+
+---
+
+# 👤 Users
+
+## Current User Data
+
+```http
+GET /user-data
+```
+
+## Search User
+
+```http
+GET /receiver/search/{receiverUsername}
+```
+
+---
+
+# 🔒 Security
+
+- JWT-secured APIs
+- Stateless authentication
+- Protected WebSocket handshake
+- Custom JWT WebSocket interceptor
+- Spring Security filter chain
+- User-specific message queues
+
+---
+
+# 🧠 Concepts Implemented
+
+This project includes practical implementations of:
+
+- WebSockets
+- STOMP Protocol
+- Real-time communication
+- JWT authentication
+- Stateful frontend synchronization
+- Presence systems
+- Read receipts
+- Delivery acknowledgements
+- Session tracking
+- Event-driven architecture
+- Concurrent collections
+- React state optimization
+
+---
+
+# 🚧 Planned Features
+
+- Typing indicators
+- Unread message counts
+- File/image sharing
+- Message pagination
+- Group chats
+- Push notifications
+- Redis caching
+- Docker deployment
+- Kubernetes deployment
+- End-to-end encryption
+
+---
+
+# 📜 License
+
+This project is licensed under the MIT License.

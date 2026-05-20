@@ -3,13 +3,12 @@ package com.fateen.chatapplicationbackend.services;
 
 import com.fateen.chatapplicationbackend.models.Message;
 import com.fateen.chatapplicationbackend.models.User;
-import com.fateen.chatapplicationbackend.models.dto.MessageDTO;
-import com.fateen.chatapplicationbackend.models.dto.MessageResponseDTO;
-import com.fateen.chatapplicationbackend.models.dto.RecentChatDTO;
-import com.fateen.chatapplicationbackend.models.dto.UserDTO;
+import com.fateen.chatapplicationbackend.models.dto.*;
+import com.fateen.chatapplicationbackend.models.enums.MessageStatus;
 import com.fateen.chatapplicationbackend.repository.MessageRepo;
 import com.fateen.chatapplicationbackend.repository.UserActionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,11 +25,13 @@ public class MessageService {
 
 
     private final UserActionRepo userActionRepo;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
-    public MessageService(MessageRepo messageRepo,UserActionRepo userActionRepo) {
+    public MessageService(MessageRepo messageRepo,UserActionRepo userActionRepo,SimpMessagingTemplate messagingTemplate) {
         this.messageRepo = messageRepo;
         this.userActionRepo = userActionRepo;
+        this.messagingTemplate=messagingTemplate;
     }
 
     public MessageResponseDTO sendMessage(String senderUsername, Long receiverId, String messageText) {
@@ -45,7 +46,7 @@ public class MessageService {
         message.setReceiver(receiver);
         message.setMessageText(messageText);
         message.setCreatedAt(LocalDateTime.now());
-        message.setRead(false);
+        message.setStatus(MessageStatus.SENT);
 
         messageRepo.save(message);
 
@@ -56,7 +57,7 @@ public class MessageService {
                 receiver.getId(),
                 messageText,
                 message.getCreatedAt(),
-                false
+                message.getStatus()
         );
 
     }
@@ -94,7 +95,7 @@ public class MessageService {
 
                         message.getCreatedAt(),
 
-                        message.isRead()
+                        message.getStatus()
 
                 ))
                 .toList();
@@ -150,5 +151,105 @@ public class MessageService {
         }
 
         return recentChats.values().stream().toList();
+    }
+
+    public void markMessagesAsRead(
+            List<Long> messageIds,
+            String currentUsername
+    ) {
+
+        User currentUser =
+                userActionRepo.findByUsername(currentUsername);
+
+        List<Message> messages =
+                messageRepo.findAllById(messageIds);
+
+        for (Message message : messages) {
+
+        /*
+        Security check
+        Only receiver can mark as read
+        */
+            if (!message.getReceiver().getId()
+                    .equals(currentUser.getId())) {
+                continue;
+            }
+
+            message.setStatus(MessageStatus.READ);
+
+            messagingTemplate.convertAndSendToUser(
+                    message.getSender().getUsername(),
+                    "/queue/read",
+                    new ReadReceiptDTO(message.getId())
+            );
+        }
+
+        messageRepo.saveAll(messages);
+    }
+
+    public void markMessagesAsDelivered(
+
+            List<Long> messageIds,
+            String currentUsername
+    ) {
+
+        User currentUser =
+                userActionRepo.findByUsername(
+                        currentUsername
+                );
+
+        List<Message> messages =
+                messageRepo.findAllById(
+                        messageIds
+                );
+
+        for (Message message : messages) {
+
+        /*
+        Only receiver can mark delivered
+        */
+
+            if (!message.getReceiver()
+                    .getId()
+                    .equals(currentUser.getId())) {
+
+                continue;
+            }
+
+        /*
+        Prevent overwriting READ
+        */
+
+            if (
+                    message.getStatus()
+                            == MessageStatus.READ
+            ) {
+
+                continue;
+            }
+
+            message.setStatus(
+                    MessageStatus.DELIVERED
+            );
+
+        /*
+        Notify sender realtime
+        */
+
+            messagingTemplate
+                    .convertAndSendToUser(
+
+                            message.getSender()
+                                    .getUsername(),
+
+                            "/queue/delivered",
+
+                            new DeliveryReceiptDTO(
+                                    message.getId()
+                            )
+                    );
+        }
+
+        messageRepo.saveAll(messages);
     }
 }

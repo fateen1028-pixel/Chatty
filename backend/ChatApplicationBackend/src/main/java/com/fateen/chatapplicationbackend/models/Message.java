@@ -1,5 +1,6 @@
 package com.fateen.chatapplicationbackend.models;
 
+import com.fateen.chatapplicationbackend.models.enums.MessageStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,8 +31,8 @@ public class Message {
 
     private String messageText;
 
+    @Enumerated(EnumType.STRING)
+    private MessageStatus status;
+
     private LocalDateTime createdAt;
-
-    private boolean isRead;
-
 }

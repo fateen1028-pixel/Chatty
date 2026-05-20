@@ -2,8 +2,10 @@ package com.fateen.chatapplicationbackend.controller;
 
 
 import com.fateen.chatapplicationbackend.models.User;
+import com.fateen.chatapplicationbackend.models.dto.MarkDeliveredDTO;
 import com.fateen.chatapplicationbackend.models.dto.MessageResponseDTO;
 import com.fateen.chatapplicationbackend.models.dto.ChatMessageDTO;
+import com.fateen.chatapplicationbackend.models.dto.ReadMessagesDTO;
 import com.fateen.chatapplicationbackend.repository.UserActionRepo;
 import com.fateen.chatapplicationbackend.services.MessageService;
 import com.fateen.chatapplicationbackend.services.UserActionService;
@@ -42,7 +44,7 @@ public class WebSocketController {
                 );
 
         User receiver =
-                userActionService.getReceiverName(
+                userActionService.getReceiverById(
                         request.receiverId()
                 );
 
@@ -55,6 +57,30 @@ public class WebSocketController {
                 principal.getName(),
                 "/queue/messages",
                 savedMessage
+        );
+    }
+
+    @MessageMapping("/chat.read")
+    public void markMessagesAsRead(
+            ReadMessagesDTO dto,
+            Principal principal
+    ) {
+
+        messageService.markMessagesAsRead(
+                dto.messageIds(),
+                principal.getName()
+        );
+    }
+
+    @MessageMapping("/chat.delivered")
+    public void markDelivered(
+            MarkDeliveredDTO dto,
+            Principal principal
+    ) {
+
+        messageService.markMessagesAsDelivered(
+                dto.messageIds(),
+                principal.getName()
         );
     }
 }

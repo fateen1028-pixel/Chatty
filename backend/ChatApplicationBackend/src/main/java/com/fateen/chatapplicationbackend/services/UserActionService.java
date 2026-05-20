@@ -27,7 +27,7 @@ public class UserActionService {
     }
 
 
-    public User getReceiverName(Long receiverId) {
+    public User getReceiverById(Long receiverId) {
 
         return userActionRepo.findById(receiverId).orElseThrow();
 

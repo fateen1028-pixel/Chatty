@@ -23,6 +23,14 @@ export default function ChatArea({ chat, onBack }) {
   const [messagesMap, setMessagesMap] =
     useState({});
 
+  /*
+  Tracks which chats were fetched
+  from DB already
+  */
+
+  const [loadedChats, setLoadedChats] =
+    useState(new Set());
+
   const [onlineUsers, setOnlineUsers] =
     useState(new Set());
 
@@ -58,13 +66,17 @@ export default function ChatArea({ chat, onBack }) {
 
   useEffect(() => {
 
-    if (!chat || !currentUserToken) return;
+    if (!chat || !currentUserToken) {
+      return;
+    }
 
     /*
-    Prevent unnecessary re-fetching
+    Prevent duplicate DB fetches
     */
 
-    if (messagesMap[chat.id]) return;
+    if (loadedChats.has(chat.id)) {
+      return;
+    }
 
     const fetchMessages = async () => {
 
@@ -93,10 +105,53 @@ export default function ChatArea({ chat, onBack }) {
 
         const data = await response.json();
 
-        setMessagesMap(prev => ({
-          ...prev,
-          [chat.id]: data
-        }));
+        /*
+        Merge DB messages with any
+        realtime websocket messages
+        */
+
+        setMessagesMap(prev => {
+
+          const existingMessages =
+            prev[chat.id] || [];
+
+          const mergedMessages = [
+
+            ...data,
+
+            ...existingMessages.filter(
+              realtimeMsg =>
+
+                !data.some(
+                  dbMsg =>
+                    dbMsg.id ===
+                    realtimeMsg.id
+                )
+            )
+          ];
+
+          return {
+
+            ...prev,
+
+            [chat.id]:
+              mergedMessages
+          };
+        });
+
+        /*
+        Mark chat as loaded
+        */
+
+        setLoadedChats(prev => {
+
+          const updated =
+            new Set(prev);
+
+          updated.add(chat.id);
+
+          return updated;
+        });
 
       } catch (error) {
 
@@ -106,7 +161,11 @@ export default function ChatArea({ chat, onBack }) {
 
     fetchMessages();
 
-  }, [chat, currentUserToken]);
+  }, [
+    chat,
+    currentUserToken,
+    loadedChats
+  ]);
 
   /*
   ==========================================
@@ -143,11 +202,6 @@ export default function ChatArea({ chat, onBack }) {
 
         const data = await response.json();
 
-        /*
-        Backend returns:
-        ["john", "alex"]
-        */
-
         setOnlineUsers(new Set(data));
 
       } catch (error) {
@@ -169,10 +223,6 @@ export default function ChatArea({ chat, onBack }) {
   useEffect(() => {
 
     if (!currentUserToken) return;
-
-    /*
-    Prevent duplicate websocket connections
-    */
 
     if (stompClientRef.current?.connected) {
       return;
@@ -196,12 +246,6 @@ export default function ChatArea({ chat, onBack }) {
         console.log(str);
       },
 
-      /*
-      ==========================================
-      CONNECTED
-      ==========================================
-      */
-
       onConnect: () => {
 
         console.log(
@@ -222,10 +266,6 @@ export default function ChatArea({ chat, onBack }) {
             const msg =
               JSON.parse(message.body);
 
-            /*
-            Determine conversation
-            */
-
             const isSentByMe =
               msg.senderUsername ===
               currentUsername;
@@ -241,7 +281,7 @@ export default function ChatArea({ chat, onBack }) {
                 prev[conversationId] || [];
 
               /*
-              Prevent duplicate messages
+              Prevent duplicates
               */
 
               const alreadyExists =
@@ -267,6 +307,26 @@ export default function ChatArea({ chat, onBack }) {
             });
 
             /*
+            ==========================================
+            SEND DELIVERY ACK
+            ==========================================
+            */
+
+            if (!isSentByMe) {
+
+              stompClient.publish({
+
+                destination:
+                  '/app/chat.delivered',
+
+                body: JSON.stringify({
+
+                  messageIds: [msg.id]
+                })
+              });
+            }
+
+            /*
             Refresh sidebar chats
             */
 
@@ -275,6 +335,115 @@ export default function ChatArea({ chat, onBack }) {
                 'refreshRecentChats'
               )
             );
+          }
+        );
+
+        /*
+        ==========================================
+        DELIVERED RECEIPT
+        ==========================================
+        */
+
+        stompClient.subscribe(
+
+          '/user/queue/delivered',
+
+          (message) => {
+
+            const receipt =
+              JSON.parse(message.body);
+
+            setMessagesMap(prev => {
+
+              const updated =
+                { ...prev };
+
+              Object.keys(updated)
+                .forEach(
+                  conversationId => {
+
+                    updated[
+                      conversationId
+                    ] =
+                      updated[
+                        conversationId
+                      ].map(msg => {
+
+                        if (
+                          msg.id ===
+                          receipt.messageId
+                        ) {
+
+                          return {
+
+                            ...msg,
+
+                            status:
+                              'DELIVERED'
+                          };
+                        }
+
+                        return msg;
+                      });
+                  }
+                );
+
+              return updated;
+            });
+          }
+        );
+
+        /*
+        ==========================================
+        READ RECEIPT
+        ==========================================
+        */
+
+        stompClient.subscribe(
+
+          '/user/queue/read',
+
+          (message) => {
+
+            const receipt =
+              JSON.parse(message.body);
+
+            setMessagesMap(prev => {
+
+              const updated =
+                { ...prev };
+
+              Object.keys(updated)
+                .forEach(
+                  conversationId => {
+
+                    updated[
+                      conversationId
+                    ] =
+                      updated[
+                        conversationId
+                      ].map(msg => {
+
+                        if (
+                          msg.id ===
+                          receipt.messageId
+                        ) {
+
+                          return {
+
+                            ...msg,
+
+                            status: 'READ'
+                          };
+                        }
+
+                        return msg;
+                      });
+                  }
+                );
+
+              return updated;
+            });
           }
         );
 
@@ -292,21 +461,10 @@ export default function ChatArea({ chat, onBack }) {
             const presenceEvent =
               JSON.parse(message.body);
 
-            /*
-            {
-              type: "ONLINE" | "OFFLINE",
-              username: "john"
-            }
-            */
-
             setOnlineUsers(prev => {
 
               const updated =
                 new Set(prev);
-
-              /*
-              USER ONLINE
-              */
 
               if (
                 presenceEvent.type ===
@@ -317,10 +475,6 @@ export default function ChatArea({ chat, onBack }) {
                   presenceEvent.username
                 );
               }
-
-              /*
-              USER OFFLINE
-              */
 
               if (
                 presenceEvent.type ===
@@ -413,6 +567,64 @@ export default function ChatArea({ chat, onBack }) {
 
   /*
   ==========================================
+  CURRENT CHAT MESSAGES
+  ==========================================
+  */
+
+  const currentMessages =
+    messagesMap[chat?.id] || [];
+
+  /*
+  ==========================================
+  MARK MESSAGES AS READ
+  ==========================================
+  */
+
+  useEffect(() => {
+
+    if (!chat) return;
+
+    if (
+      !stompClientRef.current ||
+      !stompClientRef.current.connected
+    ) {
+      return;
+    }
+
+    const unreadMessageIds =
+      currentMessages
+        .filter(msg =>
+
+          msg.senderUsername !==
+          currentUsername &&
+
+          msg.status !== 'READ'
+        )
+        .map(msg => msg.id);
+
+    if (unreadMessageIds.length === 0) {
+      return;
+    }
+
+    stompClientRef.current.publish({
+
+      destination: '/app/chat.read',
+
+      body: JSON.stringify({
+
+        messageIds:
+          unreadMessageIds
+      })
+    });
+
+  }, [
+    chat?.id,
+    currentMessages,
+    currentUsername
+  ]);
+
+  /*
+  ==========================================
   SEND MESSAGE
   ==========================================
   */
@@ -476,32 +688,13 @@ export default function ChatArea({ chat, onBack }) {
 
     return (
 
-      <div className="flex-1 flex flex-col items-center justify-center bg-slate-50/50 dark:bg-[#0B0C0E] transition-colors relative overflow-hidden">
+      <div className="flex-1 flex items-center justify-center">
 
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10 opacity-50 z-0"></div>
+        <h2 className="text-2xl font-bold">
 
-        <div className="w-24 h-24 bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-slate-800/80 flex items-center justify-center mb-6 transform -rotate-6 z-10 hover:rotate-0 transition-transform duration-500">
-
-          <span className="text-5xl transform rotate-6 hover:rotate-0 transition-transform duration-500">
-            💬
-          </span>
-
-        </div>
-
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2 z-10 tracking-tight">
-
-          Your Conversations
+          Select a chat
 
         </h2>
-
-        <p className="text-slate-500 dark:text-slate-400 z-10 text-sm max-w-sm text-center">
-
-          Select an existing chat
-          from the sidebar or start
-          a new conversation to begin
-          messaging.
-
-        </p>
 
       </div>
     );
@@ -513,15 +706,8 @@ export default function ChatArea({ chat, onBack }) {
   ==========================================
   */
 
-
-  console.log(chat);
-  console.log(Array.from(onlineUsers));
-
-  
   const isOnline =
     onlineUsers.has(chat.name);
-
-
 
   /*
   ==========================================
@@ -531,17 +717,17 @@ export default function ChatArea({ chat, onBack }) {
 
   return (
 
-    <div className="flex-1 flex flex-col bg-slate-50 dark:bg-[#0B0C0E] transition-colors h-full relative">
+    <div className="flex-1 flex flex-col bg-slate-50 dark:bg-[#0B0C0E] h-full relative">
 
       {/* HEADER */}
 
-      <div className="h-[72px] px-6 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-xl flex items-center justify-between z-10 sticky top-0">
+      <div className="h-[72px] px-6 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#111113]/80 flex items-center justify-between sticky top-0">
 
         <div className="flex items-center space-x-4">
 
           <button
             onClick={onBack}
-            className="md:hidden p-2 -ml-2 mr-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+            className="md:hidden"
           >
             ←
           </button>
@@ -551,115 +737,87 @@ export default function ChatArea({ chat, onBack }) {
             <img
               src={chat.avatar}
               alt={chat.name}
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-white dark:ring-slate-900 shadow-sm"
+              className="w-10 h-10 rounded-full"
             />
 
             {isOnline && (
 
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
 
             )}
 
           </div>
 
-          <div className="flex flex-col">
+          <div>
 
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight">
+            <h3 className="text-sm font-bold">
 
               {chat.name}
 
             </h3>
 
-            <p className="text-xs font-medium text-emerald-500 dark:text-emerald-400 mt-0.5">
+            <p className="text-xs text-emerald-500">
 
-              {isOnline
-                ? 'Online now'
-                : 'Offline'}
+              {
+                isOnline
+                  ? 'Online now'
+                  : 'Offline'
+              }
 
             </p>
 
           </div>
         </div>
-
-        <div className="flex items-center space-x-1.5 text-slate-400 dark:text-slate-500">
-
-          <button className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-500 transition-all rounded-full">
-
-            <Phone
-              size={18}
-              strokeWidth={2.5}
-            />
-
-          </button>
-
-          <button className="p-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-500 transition-all rounded-full">
-
-            <Video
-              size={18}
-              strokeWidth={2.5}
-            />
-
-          </button>
-
-          <button className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-all rounded-full">
-
-            <MoreVertical
-              size={18}
-              strokeWidth={2.5}
-            />
-
-          </button>
-
-        </div>
       </div>
 
       {/* MESSAGES */}
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
-        {(messagesMap[chat.id] || [])
-          .map((msg) => {
+        {currentMessages.map((msg) => {
 
-            const isOwn =
-              msg.senderUsername ===
-              currentUsername;
+          const isOwn =
+            msg.senderUsername ===
+            currentUsername;
 
-            return (
+          return (
+
+            <div
+              key={msg.id}
+              className={`flex ${
+                isOwn
+                  ? 'justify-end'
+                  : 'justify-start'
+              }`}
+            >
 
               <div
-                key={msg.id}
-                className={`flex ${
+                className={`max-w-[75%] flex flex-col ${
                   isOwn
-                    ? 'justify-end'
-                    : 'justify-start'
+                    ? 'items-end'
+                    : 'items-start'
                 }`}
               >
 
                 <div
-                  className={`max-w-[75%] sm:max-w-[65%] flex flex-col ${
+                  className={`px-4 py-2.5 ${
                     isOwn
-                      ? 'items-end'
-                      : 'items-start'
+                      ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-[4px]'
+                      : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 rounded-2xl rounded-tl-[4px]'
                   }`}
                 >
 
-                  <div
-                    className={`px-4 py-2.5 shadow-sm transform transition-all ${
-                      isOwn
-                        ? 'bg-indigo-600 font-medium text-white rounded-2xl rounded-tr-[4px]'
-                        : 'bg-white font-medium dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 text-slate-800 dark:text-slate-100 rounded-2xl rounded-tl-[4px]'
-                    }`}
-                  >
+                  <p>
 
-                    <p className="text-[14.5px] leading-[1.6]">
+                    {msg.message}
 
-                      {msg.message}
+                  </p>
 
-                    </p>
+                </div>
 
-                  </div>
+                <div className="flex items-center gap-1 mt-1.5 px-1">
 
-                  <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-1.5 px-1 tracking-wide">
+                  <span className="text-[10px] text-slate-400">
 
                     {
                       msg.createdAt &&
@@ -676,10 +834,30 @@ export default function ChatArea({ chat, onBack }) {
 
                   </span>
 
+                  {
+                    isOwn && (
+
+                      <span className="text-[10px] text-slate-400">
+
+                        {
+                          msg.status === 'SENT'
+                            ? '✓'
+                            : msg.status === 'DELIVERED'
+                            ? '✓✓'
+                            : '✓✓ Read'
+                        }
+
+                      </span>
+                    )
+                  }
+
                 </div>
+
               </div>
-            );
-          })}
+
+            </div>
+          );
+        })}
 
         <div ref={messagesEndRef} />
 
@@ -687,38 +865,14 @@ export default function ChatArea({ chat, onBack }) {
 
       {/* INPUT */}
 
-      <div className="p-4 bg-white/80 dark:bg-[#111113]/80 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 sticky bottom-0 z-10">
+      <div className="p-4 bg-white/80 dark:bg-[#111113]/80 border-t border-slate-200/80 dark:border-slate-800/80 sticky bottom-0">
 
         <form
           onSubmit={handleSend}
-          className="flex items-end space-x-2 max-w-5xl mx-auto w-full"
+          className="flex items-end space-x-2"
         >
 
-          <button
-            type="button"
-            className="p-3 mb-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-all rounded-full"
-          >
-
-            <Smile
-              size={20}
-              strokeWidth={2.5}
-            />
-
-          </button>
-
-          <button
-            type="button"
-            className="p-3 mb-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-all rounded-full"
-          >
-
-            <Paperclip
-              size={20}
-              strokeWidth={2.5}
-            />
-
-          </button>
-
-          <div className="flex-1 relative bg-slate-100 dark:bg-slate-900 rounded-3xl border border-slate-200/50 dark:border-slate-800 shadow-inner group">
+          <div className="flex-1 relative bg-slate-100 dark:bg-slate-900 rounded-3xl">
 
             <input
               type="text"
@@ -729,7 +883,7 @@ export default function ChatArea({ chat, onBack }) {
                 )
               }
               placeholder="Message..."
-              className="w-full bg-transparent text-slate-900 dark:text-slate-100 px-5 py-3.5 text-[15px] focus:outline-none placeholder:text-slate-400"
+              className="w-full bg-transparent px-5 py-3.5 focus:outline-none"
             />
 
           </div>
@@ -737,13 +891,12 @@ export default function ChatArea({ chat, onBack }) {
           <button
             type="submit"
             disabled={!input.trim()}
-            className="p-3.5 mb-0.5 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 hover:scale-105 hover:shadow-lg disabled:hover:scale-100 disabled:hover:shadow-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="p-3.5 bg-indigo-600 text-white rounded-full"
           >
 
             <Send
               size={18}
               strokeWidth={2.5}
-              className="ml-0.5"
             />
 
           </button>
