@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: .
+    container_name: chatapp-backend
+
+
+    env_file:
+      - .env
+
+
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+
+
+    ports:
+      - "8080:8080"

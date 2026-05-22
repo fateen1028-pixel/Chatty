@@ -2,10 +2,7 @@ package com.fateen.chatapplicationbackend.controller;
 
 
 import com.fateen.chatapplicationbackend.models.User;
-import com.fateen.chatapplicationbackend.models.dto.MarkDeliveredDTO;
-import com.fateen.chatapplicationbackend.models.dto.MessageResponseDTO;
-import com.fateen.chatapplicationbackend.models.dto.ChatMessageDTO;
-import com.fateen.chatapplicationbackend.models.dto.ReadMessagesDTO;
+import com.fateen.chatapplicationbackend.models.dto.*;
 import com.fateen.chatapplicationbackend.repository.UserActionRepo;
 import com.fateen.chatapplicationbackend.services.MessageService;
 import com.fateen.chatapplicationbackend.services.UserActionService;
@@ -81,6 +78,30 @@ public class WebSocketController {
         messageService.markMessagesAsDelivered(
                 dto.messageIds(),
                 principal.getName()
+        );
+    }
+
+    @MessageMapping("/chat.typing")
+    public void typing(
+            TypingDTO request,
+            Principal principal
+    ) {
+
+        User receiver =
+                userActionService.getReceiverById(
+                        request.receiverId()
+                );
+
+        messagingTemplate.convertAndSendToUser(
+
+                receiver.getUsername(),
+
+                "/queue/typing",
+
+                new TypingEventDTO(
+                        principal.getName(),
+                        request.typing()
+                )
         );
     }
 }
