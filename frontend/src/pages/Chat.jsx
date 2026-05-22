@@ -10,7 +10,7 @@ export default function Chat() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/user-data`, {
+        const res = await fetch(`https://chatapp-backend-pvqn.onrender.com/user-data`, {
           method:'GET',
           headers: {
             'Content-Type': 'application/json',

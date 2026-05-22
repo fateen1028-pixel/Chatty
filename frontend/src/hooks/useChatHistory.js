@@ -16,7 +16,7 @@ export function useChatHistory(chat, currentUserToken) {
     const fetchMessages = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/messages/chat/${chat.id}`,
+          `https://chatapp-backend-pvqn.onrender.com/messages/chat/${chat.id}`,
           {
             headers: {
               Authorization: `Bearer ${currentUserToken}`,

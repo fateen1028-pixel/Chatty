@@ -33,7 +33,7 @@ useEffect(() => {
     try {
 
       const res = await fetch(
-        'http://localhost:8080/messages/recent-chats',
+        'https://chatapp-backend-pvqn.onrender.com/messages/recent-chats',
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -116,7 +116,7 @@ useEffect(() => {
     try {
 
       const res = await fetch(
-        `http://localhost:8080/receiver/search/${emailInput}`,
+        `https://chatapp-backend-pvqn.onrender.com/receiver/search/${emailInput}`,
         {
           headers: {
             Authorization: `Bearer ${token}`

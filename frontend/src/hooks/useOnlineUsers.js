@@ -11,7 +11,7 @@ export function useOnlineUsers(currentUserToken) {
     const fetchOnlineUsers = async () => {
       try {
         const response = await fetch(
-          'http://localhost:8080/presence/online-users',
+          'https://chatapp-backend-pvqn.onrender.com/presence/online-users',
           {
             headers: {
               Authorization: `Bearer ${currentUserToken}`

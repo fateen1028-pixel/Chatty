@@ -16,7 +16,7 @@ export function useWebSocket(currentUserToken, currentUsername, setMessagesMap, 
     }
 
     const stompClient = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS('https://chatapp-backend-pvqn.onrender.com/ws'),
       connectHeaders: {
         Authorization: `Bearer ${currentUserToken}`
       },
