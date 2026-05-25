@@ -76,7 +76,7 @@ public class AuthService {
                 );
 
         refreshTokenService.createRefreshToken(
-                username,
+                request.getUsername(),
                 refreshToken,
                 familyId
         );

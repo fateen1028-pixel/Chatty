@@ -17,6 +17,8 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+    @Column(unique = true)
     private String token;
 
     private String username;
@@ -25,15 +27,25 @@ public class RefreshToken {
 
     private boolean revoked = false;
 
+
+    @Column(nullable = false)
     private String familyId;
 
     public RefreshToken(
             String token,
             String username,
-            LocalDateTime expiryDate
+            LocalDateTime expiryDate,
+            String familyId
     ) {
+
         this.token = token;
+
         this.username = username;
+
         this.expiryDate = expiryDate;
+
+        this.familyId = familyId;
+
+        this.revoked = false;
     }
 }

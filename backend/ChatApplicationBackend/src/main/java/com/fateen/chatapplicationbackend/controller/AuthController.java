@@ -4,6 +4,7 @@ import com.fateen.chatapplicationbackend.models.*;
 import com.fateen.chatapplicationbackend.models.dto.*;
 import com.fateen.chatapplicationbackend.repository.RefreshTokenRepo;
 import com.fateen.chatapplicationbackend.repository.UserActionRepo;
+import com.fateen.chatapplicationbackend.security.CookieUtil;
 import com.fateen.chatapplicationbackend.services.AuthService;
 import com.fateen.chatapplicationbackend.services.JwtService;
 import com.fateen.chatapplicationbackend.services.RefreshTokenService;
@@ -27,7 +28,7 @@ public class AuthController {
     private final UserActionRepo userRepo;
     private final RefreshTokenRepo refreshTokenRepo;
     private final RefreshTokenService refreshTokenService;
-    private final com.fateen.chatapplicationbackend.security.CookieUtil cookieUtil;
+    private final CookieUtil cookieUtil;
 
 
 

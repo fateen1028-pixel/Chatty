@@ -1,7 +1,9 @@
 package com.fateen.chatapplicationbackend.services;
 
 import com.fateen.chatapplicationbackend.models.RefreshToken;
+import com.fateen.chatapplicationbackend.models.User;
 import com.fateen.chatapplicationbackend.repository.RefreshTokenRepo;
+import com.fateen.chatapplicationbackend.repository.UserActionRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +17,8 @@ import java.util.List;
 public class RefreshTokenService {
 
     private final RefreshTokenRepo refreshTokenRepo;
+
+    private final UserActionRepo userRepo;
 
     /*
     =========================================
@@ -61,9 +65,10 @@ public class RefreshTokenService {
     }
 
     public RefreshTokenService(
-            RefreshTokenRepo refreshTokenRepo
+            RefreshTokenRepo refreshTokenRepo, UserActionRepo userRepo
     ) {
         this.refreshTokenRepo = refreshTokenRepo;
+        this.userRepo = userRepo;
     }
 
     public void createRefreshToken(
@@ -72,14 +77,14 @@ public class RefreshTokenService {
             String familyId
     ) {
 
-        User user =
-                userRepo.findByUsername(username)
-                        .orElseThrow();
+//        User user =
+//                userRepo.findByUsername(username);
+
 
         RefreshToken refreshToken =
                 new RefreshToken();
 
-        refreshToken.setUser(user);
+        refreshToken.setUsername(username);
 
         refreshToken.setToken(token);
 
