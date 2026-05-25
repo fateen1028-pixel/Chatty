@@ -9,37 +9,48 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class AuthService {
 
     private final AuthRepo authRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(
             AuthRepo authRepo,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            JwtService jwtService, RefreshTokenService refreshTokenService
     ) {
         this.authRepo = authRepo;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public RegisterResponse register(RegisterRequest request) {
+
+
 
         User user = new User(
                 request.getUsername(),
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword())
         );
-
-        authRepo.save(user);
-
+        try {
+            authRepo.save(user);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return new RegisterResponse("User Registered");
     }
 
     public AuthResponse login(LoginRequest request) {
+
+        String familyId =
+                UUID.randomUUID().toString();
 
         User user = authRepo.findByUsername(request.getUsername())
                 .orElseThrow(() ->
@@ -54,9 +65,22 @@ public class AuthService {
             throw new BadCredentialsException("User not found");
         }
 
-        String token =
-                jwtService.generateToken(user.getUsername());
+        String accessToken =
+                jwtService.generateAccessToken(
+                        user.getUsername()
+                );
 
-        return new AuthResponse(token);
+        String refreshToken =
+                jwtService.generateRefreshToken(
+                        user.getUsername()
+                );
+
+        refreshTokenService.createRefreshToken(
+                username,
+                refreshToken,
+                familyId
+        );
+
+        return new AuthResponse(accessToken,refreshToken);
     }
 }

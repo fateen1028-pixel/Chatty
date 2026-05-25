@@ -24,6 +24,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
+
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -47,12 +49,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        if (!jwtService.isTokenValid(token)) {
+        if (!jwtService.isAccessTokenValid(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        String username = jwtService.parseToken(token);
+        String username = jwtService.extractUsername(token);
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
@@ -65,7 +67,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 new WebAuthenticationDetailsSource().buildDetails(request)
         );
 
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+        SecurityContextHolder
+                .getContext()
+                .setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
 

@@ -1,5 +1,7 @@
 package com.fateen.chatapplicationbackend.services;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ClaimsBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -18,6 +20,14 @@ public class JwtService {
 
     private SecretKey SECRET_KEY;
 
+    // 15 minutes
+    private final long ACCESS_TOKEN_EXPIRATION =
+            1000 * 60 * 15;
+
+    // 7 days
+    private final long REFRESH_TOKEN_EXPIRATION =
+            1000L * 60 * 60 * 24 * 7;
+
     @PostConstruct
     public void init() {
         SECRET_KEY = Keys.hmacShaKeyFor(
@@ -25,17 +35,41 @@ public class JwtService {
         );
     }
 
-    public String generateToken(String username) {
+    public String generateAccessToken(String username) {
 
         return Jwts.builder()
                 .subject(username)
+                .claim("type", "access")
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 3600000))
+                .expiration(
+                        new Date(
+                                System.currentTimeMillis()
+                                        + ACCESS_TOKEN_EXPIRATION
+                        )
+                )
                 .signWith(SECRET_KEY)
                 .compact();
     }
 
-    public String parseToken(String token) {
+
+    public String generateRefreshToken(String username){
+        return Jwts.builder()
+                .subject(username)
+                .claim("type", "refresh")
+                .issuedAt(new Date())
+                .expiration(
+                        new Date(
+                                System.currentTimeMillis()
+                                        + REFRESH_TOKEN_EXPIRATION
+                        )
+                )
+                .signWith(SECRET_KEY)
+                .compact();
+    }
+
+
+    //Extract Username
+    public String extractUsername(String token) {
 
         return Jwts.parser()
                 .verifyWith(SECRET_KEY)
@@ -45,20 +79,88 @@ public class JwtService {
                 .getSubject();
     }
 
-    public boolean isTokenValid(String token) {
+    public String extractTokenType(String token) {
+
+        return extractClaims(token)
+                .get("type", String.class);
+    }
+
+//    public boolean isTokenValid(String token) {
+//
+//        try {
+//
+//            Jwts.parser()
+//                    .verifyWith(SECRET_KEY)
+//                    .build()
+//                    .parseSignedClaims(token);
+//
+//            return true;
+//
+//        } catch (Exception e) {
+//
+//            return false;
+//        }
+//    }
+
+    public boolean isRefreshTokenValid(String token) {
 
         try {
 
-            Jwts.parser()
-                    .verifyWith(SECRET_KEY)
-                    .build()
-                    .parseSignedClaims(token);
+            Claims claims =
+                    extractClaims(token);
 
-            return true;
+            return claims.getExpiration()
+                    .after(new Date())
+
+                    &&
+
+                    "refresh".equals(
+                            claims.get(
+                                    "type",
+                                    String.class
+                            )
+                    );
 
         } catch (Exception e) {
 
             return false;
         }
     }
+
+    public boolean isAccessTokenValid(String token) {
+
+        try {
+
+            Claims claims =
+                    extractClaims(token);
+
+            return claims.getExpiration()
+                    .after(new Date())
+
+                    &&
+
+                    "access".equals(
+                            claims.get(
+                                    "type",
+                                    String.class
+                            )
+                    );
+
+        } catch (Exception e) {
+
+            return false;
+        }
+    }
+
+    private Claims extractClaims(String token) {
+
+        return Jwts.parser()
+                .verifyWith(SECRET_KEY)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+
+
 }

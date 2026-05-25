@@ -54,10 +54,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
 
-                    config.setAllowedOriginPatterns(List.of("http://localhost:5173","https://chatapp-frontend-1o5.pages.dev"));
+                    config.setAllowedOrigins(List.of("http://localhost:5173","https://chatapp-frontend-1o5.pages.dev"));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(List.of("*"));
-                    config.setExposedHeaders(List.of("Authorization"));
+//                    config.setExposedHeaders(List.of("Authorization"));
                     config.setAllowCredentials(true);
 
                     return config;
@@ -70,7 +70,7 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/ws/**").permitAll()
+                        .requestMatchers("/auth/**", "/ws/**","/").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/presence/**").authenticated()
                         .anyRequest().authenticated()

@@ -33,7 +33,7 @@ export default function ChatArea({
   ==========================================
   */
 
-  const currentUserToken = localStorage.getItem('token');
+  const accessToken = localStorage.getItem('accessToken');
   const currentUsername = localStorage.getItem('username');
 
   /*
@@ -42,9 +42,9 @@ export default function ChatArea({
   ==========================================
   */
 
-  const { messagesMap, setMessagesMap } = useChatHistory(chat, currentUserToken);
-  const { onlineUsers, setOnlineUsers } = useOnlineUsers(currentUserToken);
-  const { stompClientRef, typingUsers } = useWebSocket(currentUserToken, currentUsername, setMessagesMap, setOnlineUsers);
+  const { messagesMap, setMessagesMap } = useChatHistory(chat, accessToken);
+  const { onlineUsers, setOnlineUsers } = useOnlineUsers(accessToken);
+  const { stompClientRef, typingUsers } = useWebSocket(accessToken, currentUsername, setMessagesMap, setOnlineUsers);
 
   /*
   ==========================================

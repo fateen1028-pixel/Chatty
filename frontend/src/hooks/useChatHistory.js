@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 
-export function useChatHistory(chat, currentUserToken) {
+import { apiFetch } from '../services/api';
+
+export function useChatHistory(chat, accessToken) {
   const [messagesMap, setMessagesMap] = useState({});
   const loadedChatsRef = useRef(new Set());
 
   useEffect(() => {
-    if (!chat || !currentUserToken) {
+    if (!chat || !accessToken) {
       return;
     }
 
@@ -15,15 +17,7 @@ export function useChatHistory(chat, currentUserToken) {
 
     const fetchMessages = async () => {
       try {
-        const response = await fetch(
-          `https://chatapp-backend-pvqn.onrender.com/messages/chat/${chat.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${currentUserToken}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+        const response = await apiFetch(`/messages/chat/${chat.id}`);
 
         if (!response.ok) {
           return;
@@ -56,7 +50,7 @@ export function useChatHistory(chat, currentUserToken) {
     };
 
     fetchMessages();
-  }, [chat, currentUserToken]);
+  }, [chat, accessToken]);
 
   return { messagesMap, setMessagesMap };
 }

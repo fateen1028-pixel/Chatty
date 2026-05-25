@@ -1,23 +1,18 @@
 import { useState, useEffect } from 'react';
 
-export function useOnlineUsers(currentUserToken) {
+import { apiFetch } from '../services/api';
+
+export function useOnlineUsers(accessToken) {
   const [onlineUsers, setOnlineUsers] = useState(new Set());
 
   useEffect(() => {
-    if (!currentUserToken) {
+    if (!accessToken) {
       return;
     }
 
     const fetchOnlineUsers = async () => {
       try {
-        const response = await fetch(
-          'https://chatapp-backend-pvqn.onrender.com/presence/online-users',
-          {
-            headers: {
-              Authorization: `Bearer ${currentUserToken}`
-            }
-          }
-        );
+        const response = await apiFetch(`/presence/online-users`);
 
         if (!response.ok) {
           return;
@@ -31,7 +26,7 @@ export function useOnlineUsers(currentUserToken) {
     };
 
     fetchOnlineUsers();
-  }, [currentUserToken]);
+  }, [accessToken]);
 
   return { onlineUsers, setOnlineUsers };
 }

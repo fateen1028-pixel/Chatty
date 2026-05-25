@@ -15,18 +15,22 @@ export default function Login() {
     e.preventDefault();
     setError('');
     try {
-      const response = await fetch('https://chatapp-backend-pvqn.onrender.com/auth/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: "include",
         body: JSON.stringify({ username, password })
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.detail || 'Login failed');
+        throw new Error(data.message || 'Login failed');
       }
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('email', data.email);
-      localStorage.setItem('username', data.username);
+      if (!data.accessToken) {
+        throw new Error("Invalid server response");
+      }
+
+      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem('username', username); 
       navigate('/chat');
     } catch (err) {
       setError(err.message);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Moon, Sun, LogOut, Plus, Search, MessageSquare } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { apiFetch } from '../services/api';
 
 export default function Sidebar({
   selectedChat,
@@ -18,9 +19,6 @@ export default function Sidebar({
   const username =
     localStorage.getItem('username') || 'User';
 
-  const token =
-    localStorage.getItem('token');
-
   const userAvatar =
     'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
@@ -32,14 +30,7 @@ useEffect(() => {
 
     try {
 
-      const res = await fetch(
-        'https://chatapp-backend-pvqn.onrender.com/messages/recent-chats',
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const res = await apiFetch(`/messages/recent-chats`);
 
       if (!res.ok) {
         throw new Error('Failed to load chats');
@@ -115,14 +106,7 @@ useEffect(() => {
 
     try {
 
-      const res = await fetch(
-        `https://chatapp-backend-pvqn.onrender.com/receiver/search/${emailInput}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const res = await apiFetch(`/receiver/search/${emailInput}`);
 
       if (!res.ok) {
         throw new Error('User not found');

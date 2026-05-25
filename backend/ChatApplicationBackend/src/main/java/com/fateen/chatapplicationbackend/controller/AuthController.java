@@ -1,22 +1,43 @@
 package com.fateen.chatapplicationbackend.controller;
 
 import com.fateen.chatapplicationbackend.models.*;
-import com.fateen.chatapplicationbackend.models.dto.LoginRequest;
-import com.fateen.chatapplicationbackend.models.dto.RegisterRequest;
-import com.fateen.chatapplicationbackend.models.dto.RegisterResponse;
+import com.fateen.chatapplicationbackend.models.dto.*;
+import com.fateen.chatapplicationbackend.repository.RefreshTokenRepo;
+import com.fateen.chatapplicationbackend.repository.UserActionRepo;
 import com.fateen.chatapplicationbackend.services.AuthService;
+import com.fateen.chatapplicationbackend.services.JwtService;
+import com.fateen.chatapplicationbackend.services.RefreshTokenService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private final AuthService authService;
 
-    public AuthController(AuthService authService) {
+    private final AuthService authService;
+    private final JwtService jwtService;
+    private final UserActionRepo userRepo;
+    private final RefreshTokenRepo refreshTokenRepo;
+    private final RefreshTokenService refreshTokenService;
+    private final com.fateen.chatapplicationbackend.security.CookieUtil cookieUtil;
+
+
+
+    public AuthController(AuthService authService, JwtService jwtService, UserActionRepo userRepo, RefreshTokenRepo refreshTokenRepo, RefreshTokenService refreshTokenService, CookieUtil cookieUtil) {
         this.authService = authService;
+        this.jwtService = jwtService;
+        this.userRepo = userRepo;
+        this.refreshTokenRepo = refreshTokenRepo;
+        this.refreshTokenService = refreshTokenService;
+        this.cookieUtil = cookieUtil;
     }
 
     @PostMapping("/register")
@@ -25,8 +46,198 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest request) {
-        return authService.login(request);
+    public ResponseEntity<?> login(
+            @RequestBody LoginRequest request
+    ) {
+
+        AuthResponse response =
+                authService.login(request);
+
+        ResponseCookie cookie =
+                cookieUtil.createRefreshTokenCookie(
+                        response.refreshToken()
+                );
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        cookie.toString()
+                )
+                .body(
+                        Map.of(
+                                "accessToken",
+                                response.accessToken()
+                        )
+                );
     }
 
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(
+            HttpServletRequest request
+    ) {
+
+        String refreshTokenValue = null;
+
+        Cookie[] cookies =
+                request.getCookies();
+
+        if (cookies != null) {
+
+            for (Cookie cookie : cookies) {
+
+                if (
+                        cookie.getName()
+                                .equals("refreshToken")
+                ) {
+
+                    refreshTokenValue =
+                            cookie.getValue();
+                }
+            }
+        }
+
+        if (refreshTokenValue == null) {
+
+            return ResponseEntity
+                    .status(401)
+                    .body("Missing refresh token");
+        }
+
+        RefreshToken oldRefreshToken =
+                refreshTokenRepo
+                        .findByToken(
+                                refreshTokenValue
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Refresh token not found"
+                                )
+                        );
+
+    /*
+    VALIDATE DB TOKEN
+    */
+
+        if (oldRefreshToken.isRevoked()) {
+
+            refreshTokenService.revokeAllByFamily(
+                    oldRefreshToken.getFamilyId()
+            );
+
+            throw new RuntimeException(
+                    "Refresh token reuse detected"
+            );
+        }
+
+    /*
+    VALIDATE JWT
+    */
+
+        if (!jwtService.isRefreshTokenValid(
+                oldRefreshToken.getToken()
+        )) {
+
+            throw new RuntimeException(
+                    "Invalid refresh JWT"
+            );
+        }
+
+    /*
+    EXTRACT USERNAME
+    */
+
+        String username =
+                jwtService.extractUsername(
+                        oldRefreshToken.getToken()
+                );
+
+    /*
+    ROTATE TOKEN
+    */
+
+        refreshTokenService.revoke(
+                oldRefreshToken
+        );
+
+        String newAccessToken =
+                jwtService.generateAccessToken(
+                        username
+                );
+
+        String newRefreshToken =
+                jwtService.generateRefreshToken(
+                        username
+                );
+
+        refreshTokenService.createRefreshToken(
+                username,
+                newRefreshToken,
+                oldRefreshToken.getFamilyId()
+        );
+
+        ResponseCookie cookie =
+                cookieUtil.createRefreshTokenCookie(
+                        newRefreshToken
+                );
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        cookie.toString()
+                )
+                .body(
+                        Map.of(
+                                "accessToken",
+                                newAccessToken
+                        )
+                );
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(
+            HttpServletRequest request
+    ) {
+
+        String refreshTokenValue = null;
+
+        Cookie[] cookies =
+                request.getCookies();
+
+        if (cookies != null) {
+
+            for (Cookie cookie : cookies) {
+
+                if (
+                        cookie.getName()
+                                .equals("refreshToken")
+                ) {
+
+                    refreshTokenValue =
+                            cookie.getValue();
+                }
+            }
+        }
+
+        if (refreshTokenValue != null) {
+
+            refreshTokenRepo
+                    .findByToken(
+                            refreshTokenValue
+                    )
+                    .ifPresent(
+                            refreshTokenService::revoke
+                    );
+        }
+
+        ResponseCookie clearCookie =
+                cookieUtil.deleteRefreshTokenCookie();
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        clearCookie.toString()
+                )
+                .body("Logged out");
+    }
 }

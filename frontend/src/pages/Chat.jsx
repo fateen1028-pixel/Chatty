@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import ChatArea from '../components/ChatArea';
 
+import { apiFetch } from '../services/api';
+
 export default function Chat() {
   const [selectedChat, setSelectedChat] = useState(null);
   const [contacts, setContacts] = useState([]);
@@ -10,12 +12,8 @@ export default function Chat() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`https://chatapp-backend-pvqn.onrender.com/user-data`, {
-          method:'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+        const res = await apiFetch(`/user-data`, {
+          method: 'GET'
         });
         if (res.ok) {
           const data = await res.json();
