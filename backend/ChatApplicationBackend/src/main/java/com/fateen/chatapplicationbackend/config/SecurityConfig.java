@@ -54,7 +54,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
 
-                    config.setAllowedOrigins(List.of("http://localhost:5173","https://chatapp-frontend-1o5.pages.dev"));
+                    config.setAllowedOrigins(List.of("http://localhost:5173","https://chatapp-frontend-1o5.pages.dev","https://chat.fateen.dev"));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
 //                    config.setExposedHeaders(List.of("Authorization"));
