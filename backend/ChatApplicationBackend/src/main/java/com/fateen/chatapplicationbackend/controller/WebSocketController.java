@@ -37,7 +37,10 @@ public class WebSocketController {
                 messageService.sendMessage(
                         principal.getName(),
                         request.receiverId(),
-                        request.message()
+                        request.ciphertext(),
+                        request.senderEncryptedAesKey(),
+                        request.receiverEncryptedAesKey(),
+                        request.iv()
                 );
 
         User receiver =

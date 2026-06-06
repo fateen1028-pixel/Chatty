@@ -28,6 +28,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(columnDefinition = "TEXT")
+    private String publicKey;
+
+
 
     public void setUsername(String username) {
         this.username = username;
@@ -39,6 +43,10 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 
     public User(String username, String email, String password) {

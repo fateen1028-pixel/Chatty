@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-
+import { decryptChatMessage } from '../crypto/e2ee';
+import { getPrivateKey } from '../crypto/storage';
 
 export function useWebSocket(
   currentUsername,
@@ -137,18 +138,57 @@ export function useWebSocket(
 
             stompClient.subscribe(
               '/user/queue/messages',
-              (message) => {
+              async (message) => {
 
                 const msg =
                   JSON.parse(message.body);
 
-                const isSentByMe =
-                  msg.senderUsername === currentUsername;
+                  console.log("RAW", msg);
+
+                  const isSentByMe =
+  msg.senderUsername === currentUsername;
+
+try {
+
+  const privateKey = await getPrivateKey(currentUsername);
+
+  if (privateKey && msg.cipherText) {
+    const encryptedAesKey = isSentByMe ? msg.senderEncryptedAesKey : msg.receiverEncryptedAesKey;
+
+    if (encryptedAesKey) {
+      const decryptedText = await decryptChatMessage(
+        msg.cipherText,
+        encryptedAesKey,
+        msg.iv,
+        privateKey
+      );
+      
+      msg.message = decryptedText;
+    }
+  }
+
+} catch (error) {
+
+  console.error(
+    'Decryption failed',
+    error
+  );
+
+  msg.message =
+    "[Decryption Failed]";
+}
+
+                
 
                 const conversationId =
                   isSentByMe
                     ? msg.receiverId
                     : msg.senderId;
+
+                    console.log(
+  "STORING MESSAGE",
+  JSON.stringify(msg, null, 2)
+);
 
                 setMessagesMap(prev => {
 

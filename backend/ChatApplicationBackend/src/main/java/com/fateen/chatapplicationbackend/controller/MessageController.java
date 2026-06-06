@@ -20,23 +20,23 @@ public class MessageController {
     @Autowired
     private MessageService messageService;
 
-    @PostMapping("{receiverId}")
-    public String sendMessage(
-            @PathVariable Long receiverId,
-            @RequestBody MessageDTO request,
-            Authentication authentication
-    ) {
-
-        String senderUsername = authentication.getName();
-
-        messageService.sendMessage(
-                senderUsername,
-                receiverId,
-                request.message()
-        );
-
-        return "Sent";
-    }
+//    @PostMapping("{receiverId}")
+//    public String sendMessage(
+//            @PathVariable Long receiverId,
+//            @RequestBody MessageDTO request,
+//            Authentication authentication
+//    ) {
+//
+//        String senderUsername = authentication.getName();
+//
+//        messageService.sendMessage(
+//                senderUsername,
+//                receiverId,
+//                request.message()
+//        );
+//
+//        return "Sent";
+//    }
 
     @GetMapping("{receiverId}")
     public List<MessageResponseDTO> getMessages(

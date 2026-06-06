@@ -10,7 +10,13 @@ public record RecentChatDTO(
 
         String email,
 
-        String lastMessage,
+        String cipherText,
+
+        String senderEncryptedAesKey,
+
+        String receiverEncryptedAesKey,
+
+        String iv,
 
         LocalDateTime createdAt
 

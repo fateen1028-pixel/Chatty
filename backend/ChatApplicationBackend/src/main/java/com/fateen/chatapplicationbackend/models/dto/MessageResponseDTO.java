@@ -14,7 +14,13 @@ public record MessageResponseDTO(
 
         Long receiverId,
 
-        String message,
+        String cipherText,
+
+        String senderEncryptedAesKey,
+
+        String receiverEncryptedAesKey,
+
+        String iv,
 
         LocalDateTime createdAt,
 

@@ -34,7 +34,20 @@ public class MessageService {
         this.messagingTemplate=messagingTemplate;
     }
 
-    public MessageResponseDTO sendMessage(String senderUsername, Long receiverId, String messageText) {
+    public MessageResponseDTO sendMessage(
+
+            String senderUsername,
+
+            Long receiverId,
+
+            String ciphertext,
+
+            String senderEncryptedAesKey,
+
+            String receiverEncryptedAesKey,
+
+            String iv
+    ) {
 
         User sender = userActionRepo.findByUsername(senderUsername);
 
@@ -44,7 +57,13 @@ public class MessageService {
 
         message.setSender(sender);
         message.setReceiver(receiver);
-        message.setMessageText(messageText);
+        message.setCiphertext(ciphertext);
+
+        message.setSenderEncryptedAesKey(senderEncryptedAesKey);
+
+        message.setReceiverEncryptedAesKey(receiverEncryptedAesKey);
+
+        message.setIv(iv);
         message.setCreatedAt(LocalDateTime.now());
         message.setStatus(MessageStatus.SENT);
 
@@ -55,7 +74,10 @@ public class MessageService {
                 sender.getId(),
                 sender.getUsername(),
                 receiver.getId(),
-                messageText,
+                message.getCiphertext(),
+                message.getSenderEncryptedAesKey(),
+                message.getReceiverEncryptedAesKey(),
+                message.getIv(),
                 message.getCreatedAt(),
                 message.getStatus()
         );
@@ -82,21 +104,16 @@ public class MessageService {
 
         return messages.stream()
                 .map(message -> new MessageResponseDTO(
-
                         message.getId(),
-
                         message.getSender().getId(),
-
                         message.getSender().getUsername(),
-
                         message.getReceiver().getId(),
-
-                        message.getMessageText(),
-
+                        message.getCiphertext(),
+                        message.getSenderEncryptedAesKey(),
+                        message.getReceiverEncryptedAesKey(),
+                        message.getIv(),
                         message.getCreatedAt(),
-
                         message.getStatus()
-
                 ))
                 .toList();
     }
@@ -142,7 +159,13 @@ public class MessageService {
 
                                 otherUser.getEmail(),
 
-                                message.getMessageText(),
+                                message.getCiphertext(),
+
+                                message.getSenderEncryptedAesKey(),
+
+                                message.getReceiverEncryptedAesKey(),
+
+                                message.getIv(),
 
                                 message.getCreatedAt()
                         )

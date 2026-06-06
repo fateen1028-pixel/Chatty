@@ -56,7 +56,7 @@ public class SecurityConfig {
 
                     config.setAllowedOrigins(List.of("http://localhost:5173","https://chatapp-frontend-1o5.pages.dev"));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    config.setAllowedHeaders(List.of("*"));
+                    config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
 //                    config.setExposedHeaders(List.of("Authorization"));
                     config.setAllowCredentials(true);
 

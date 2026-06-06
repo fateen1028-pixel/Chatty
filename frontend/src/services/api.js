@@ -8,6 +8,17 @@ export async function apiFetch(
     let accessToken =
         localStorage.getItem("accessToken");
 
+    console.log("TOKEN:", accessToken);
+
+    console.log("URL:", `${BASE_URL}${endpoint}`);
+
+    console.log("ACCESS TOKEN =", accessToken);
+
+    console.log("HEADERS = ", {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`
+    });
+
     let response = await fetch(
         `${BASE_URL}${endpoint}`,
         {
@@ -22,6 +33,8 @@ export async function apiFetch(
                 ...options.headers
             }
         }
+
+
     );
 
     // Access token expired

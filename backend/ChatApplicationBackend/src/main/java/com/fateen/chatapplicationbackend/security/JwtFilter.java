@@ -42,12 +42,21 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
+        System.out.println("PATH = " + path);
+        System.out.println("AUTH HEADER = " + authHeader);
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = authHeader.substring(7);
+
+        System.out.println("TOKEN = " + token);
+        System.out.println(
+                "VALID = " +
+                        jwtService.isAccessTokenValid(token)
+        );
 
         if (!jwtService.isAccessTokenValid(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

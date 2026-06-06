@@ -11,6 +11,11 @@ import MessageInput from './ChatArea/MessageInput';
 import { useChatHistory } from '../hooks/useChatHistory';
 import { useOnlineUsers } from '../hooks/useOnlineUsers';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { encryptChatMessage } from '../crypto/e2ee';
+import { importPublicKey } from '../crypto/rsa';
+import {apiFetch} from "../services/api.js";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function ChatArea({
   chat,
@@ -44,7 +49,7 @@ export default function ChatArea({
 
   const { messagesMap, setMessagesMap } = useChatHistory(chat, accessToken);
   const { onlineUsers, setOnlineUsers } = useOnlineUsers(accessToken);
-  const { stompClientRef, typingUsers } = useWebSocket(accessToken, currentUsername, setMessagesMap, setOnlineUsers);
+  const { stompClientRef, typingUsers } = useWebSocket(currentUsername, setMessagesMap, setOnlineUsers);
 
   /*
   ==========================================
@@ -127,6 +132,20 @@ export default function ChatArea({
       return;
     }
 
+    // Optimistically update local state to 'READ' to break infinite loop
+    setMessagesMap(prev => {
+      const updated = { ...prev };
+      if (updated[chat.id]) {
+        updated[chat.id] = updated[chat.id].map(msg => {
+          if (unreadMessageIds.includes(msg.id)) {
+            return { ...msg, status: 'READ' };
+          }
+          return msg;
+        });
+      }
+      return updated;
+    });
+
     stompClientRef.current
       .publish({
 
@@ -145,7 +164,8 @@ export default function ChatArea({
     chat?.id,
     currentMessages,
     currentUsername,
-    stompClientRef
+    stompClientRef,
+    setMessagesMap
   ]);
 
   /*
@@ -230,7 +250,7 @@ export default function ChatArea({
   */
 
   const handleSend =
-    (e) => {
+    async (e) => {
 
       e.preventDefault();
 
@@ -248,21 +268,65 @@ export default function ChatArea({
         return;
       }
 
-      stompClientRef.current
-        .publish({
+      console.log("TOKEN = ", localStorage.getItem("accessToken"));
 
-          destination:
-            '/app/chat',
+      try {
+          console.log("USING APIFETCH");
 
-          body: JSON.stringify({
+          const response =
+              await apiFetch(
+                  `/keys/public/${chat.id}`
+              );
 
-            receiverId:
-              chat.id,
+          console.log("STATUS =", response.status);
 
-            message:
-              input.trim()
-          })
-        });
+          if (!response.ok) {
+              const body = await response.text();
+              console.log("BODY =", body);
+              return;
+          }
+
+          const data = await response.json();
+
+        const receiverPublicKey = await importPublicKey(data.receiverPublicKey);
+
+
+        const senderPublicKey = await importPublicKey(data.senderPublicKey);
+
+        const encryptedPayload =
+          await encryptChatMessage(
+            input.trim(),
+            senderPublicKey,
+            receiverPublicKey
+          );
+
+        // localStorage.setItem(
+        //   'sent_' + encryptedPayload.ciphertext,
+        //   input.trim()
+        // );
+
+        stompClientRef.current
+          .publish({
+
+            destination:
+              '/app/chat',
+
+            body: JSON.stringify({
+
+              receiverId: chat.id,
+
+              ciphertext: encryptedPayload.ciphertext,
+
+              senderEncryptedAesKey: encryptedPayload.senderEncryptedAesKey,
+
+              receiverEncryptedAesKey: encryptedPayload.receiverEncryptedAesKey,
+
+              iv: encryptedPayload.iv
+            })
+          });
+      } catch (error) {
+        console.error('Error encrypting and sending message:', error);
+      }
 
       /*
       Stop typing
@@ -327,7 +391,7 @@ export default function ChatArea({
 
   const isTyping =
     typingUsers[
-      chat.username
+      chat.name
     ];
 
   /*

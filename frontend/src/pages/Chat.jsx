@@ -35,11 +35,11 @@ export default function Chat() {
   }, []);
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
-      <div className={`w-full md:w-auto h-full flex-shrink-0 ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
+    <div className="flex h-screen bg-slate-50 dark:bg-[#0B0C0E] overflow-hidden selection:bg-indigo-500/30">
+      <div className={`w-full md:w-[380px] lg:w-[420px] h-full flex-shrink-0 border-r border-slate-200/50 dark:border-slate-800/50 bg-white/30 dark:bg-[#0B0C0E]/30 backdrop-blur-xl ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
         {!loading && <Sidebar selectedChat={selectedChat} setSelectedChat={setSelectedChat} contacts={contacts} setContacts={setContacts} />}
       </div>
-      <div className={`flex-1 h-full w-full ${!selectedChat ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`flex-1 h-full w-full bg-slate-50/50 dark:bg-transparent ${!selectedChat ? 'hidden md:flex' : 'flex'}`}>
         {!loading && <ChatArea chat={selectedChat} onBack={() => setSelectedChat(null)} contacts={contacts} setContacts={setContacts} />}
       </div>
     </div>

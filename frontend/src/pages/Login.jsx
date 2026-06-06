@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import {initializeKeys} from "../crypto/initializekey.js";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +32,10 @@ export default function Login() {
 
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('username', username); 
+
+      await initializeKeys();
+
+      
       navigate('/chat');
     } catch (err) {
       setError(err.message);

@@ -29,7 +29,19 @@ public class Message {
     @JoinColumn(name = "receiver_id")
     private User receiver;
 
-    private String messageText;
+
+    @Column(columnDefinition = "TEXT")
+    private String ciphertext;
+
+
+    @Column(columnDefinition = "TEXT")
+    private String senderEncryptedAesKey;
+
+    @Column(columnDefinition = "TEXT")
+    private String receiverEncryptedAesKey;
+
+    @Column(columnDefinition = "TEXT")
+    private String iv;
 
     @Enumerated(EnumType.STRING)
     private MessageStatus status;
