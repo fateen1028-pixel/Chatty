@@ -22,20 +22,31 @@ export default function Login() {
         credentials: "include",
         body: JSON.stringify({ username, password })
       });
-      const data = await response.json();
+
+      // 1. Check if the server returned a bad status code first
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        let errorMessage = 'Login failed';
+        try {
+          // Try to safely parse the custom structured JSON error from backend
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (parseError) {
+          // Fallback if the body isn't JSON formatted
+          errorMessage = `Server Error: ${response.statusText || response.status}`;
+        }
+        throw new Error(errorMessage);
       }
+
+      // 2. Safe to parse successful data payload now
+      const data = await response.json();
       if (!data.accessToken) {
-        throw new Error("Invalid server response");
+        throw new Error("Invalid server response structure");
       }
 
       localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('username', username); 
+      localStorage.setItem('username', username);
 
       await initializeKeys();
-
-      
       navigate('/chat');
     } catch (err) {
       setError(err.message);

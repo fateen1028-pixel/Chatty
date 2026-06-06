@@ -2,6 +2,7 @@ package com.fateen.chatapplicationbackend.models.dto;
 
 import com.fateen.chatapplicationbackend.models.enums.MessageStatus;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public record MessageResponseDTO(
@@ -22,7 +23,7 @@ public record MessageResponseDTO(
 
         String iv,
 
-        LocalDateTime createdAt,
+        Instant createdAt,
 
         MessageStatus status
 

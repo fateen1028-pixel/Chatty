@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,7 +65,7 @@ public class MessageService {
         message.setReceiverEncryptedAesKey(receiverEncryptedAesKey);
 
         message.setIv(iv);
-        message.setCreatedAt(LocalDateTime.now());
+        message.setCreatedAt(Instant.now());
         message.setStatus(MessageStatus.SENT);
 
         messageRepo.save(message);

@@ -1,5 +1,6 @@
 package com.fateen.chatapplicationbackend.models.dto;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public record RecentChatDTO(
@@ -18,7 +19,7 @@ public record RecentChatDTO(
 
         String iv,
 
-        LocalDateTime createdAt
+        Instant createdAt
 
 ) {
 }

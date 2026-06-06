@@ -5,6 +5,7 @@ import com.fateen.chatapplicationbackend.models.dto.LoginRequest;
 import com.fateen.chatapplicationbackend.models.dto.RegisterRequest;
 import com.fateen.chatapplicationbackend.models.dto.RegisterResponse;
 import com.fateen.chatapplicationbackend.repository.AuthRepo;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,8 +42,11 @@ public class AuthService {
         );
         try {
             authRepo.save(user);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("Username or Email is already registered");
+        }catch (Exception e) {
+
+            throw new RuntimeException("Database error occurred during registration");
         }
         return new RegisterResponse("User Registered");
     }

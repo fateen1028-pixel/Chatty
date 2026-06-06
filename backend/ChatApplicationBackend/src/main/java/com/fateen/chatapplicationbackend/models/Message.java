@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -46,5 +47,5 @@ public class Message {
     @Enumerated(EnumType.STRING)
     private MessageStatus status;
 
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 }

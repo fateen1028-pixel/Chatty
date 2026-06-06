@@ -249,7 +249,7 @@ useEffect(() => {
               New Message
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-              Enter the email address of the person you want to chat with.
+              Enter the username of the person you want to chat with.
             </p>
 
             <form onSubmit={handleNewChat}>

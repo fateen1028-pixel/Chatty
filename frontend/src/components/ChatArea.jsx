@@ -31,6 +31,7 @@ export default function ChatArea({
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const isTypingRef = useRef(false);
 
   /*
   ==========================================
@@ -174,73 +175,40 @@ export default function ChatArea({
   ==========================================
   */
 
-  const handleTyping =
-    (value) => {
+    const handleTyping = (value) => {
+        setInput(value);
 
-      setInput(value);
+        if (!stompClientRef.current?.connected) return;
 
-      if (
-        !stompClientRef.current
-          ?.connected
-      ) {
-        return;
-      }
+        // send "typing true" ONLY ONCE
+        if (!isTypingRef.current) {
+            isTypingRef.current = true;
 
-      /*
-      User started typing
-      */
-
-      stompClientRef.current
-        .publish({
-
-          destination:
-            '/app/chat.typing',
-
-          body: JSON.stringify({
-
-            receiverId:
-              chat.id,
-
-            typing: true
-          })
-        });
-
-      /*
-      Reset timer
-      */
-
-      if (
-        typingTimeoutRef.current
-      ) {
-
-        clearTimeout(
-          typingTimeoutRef.current
-        );
-      }
-
-      /*
-      Stop typing
-      */
-
-      typingTimeoutRef.current =
-        setTimeout(() => {
-
-          stompClientRef.current
-            ?.publish({
-
-              destination:
-                '/app/chat.typing',
-
-              body: JSON.stringify({
-
-                receiverId:
-                  chat.id,
-
-                typing: false
-              })
+            stompClientRef.current.publish({
+                destination: '/app/chat.typing',
+                body: JSON.stringify({
+                    receiverId: chat.id,
+                    typing: true
+                })
             });
+        }
 
-        }, 1500);
+        // reset stop timer
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            isTypingRef.current = false;
+
+            stompClientRef.current?.publish({
+                destination: '/app/chat.typing',
+                body: JSON.stringify({
+                    receiverId: chat.id,
+                    typing: false
+                })
+            });
+        }, 1200);
     };
 
   /*
