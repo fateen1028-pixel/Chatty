@@ -19,7 +19,7 @@ public class CookieUtil {
                 .secure(true)
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60)
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
     }
 
@@ -33,7 +33,7 @@ public class CookieUtil {
                 .secure(true)
                 .path("/")
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
     }
 }
