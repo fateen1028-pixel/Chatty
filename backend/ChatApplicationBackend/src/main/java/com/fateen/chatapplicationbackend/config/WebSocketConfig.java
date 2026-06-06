@@ -27,7 +27,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         registry.addEndpoint("/ws").setAllowedOriginPatterns(
                 "http://localhost:5173",
-                "https://chatapp-frontend-1o5.pages.dev"
+                "https://chatapp-frontend-1o5.pages.dev",
+                "https://chat.fateen.dev"
         ).withSockJS();
     }
 
