@@ -6,17 +6,14 @@ import {
 
 import {
   encryptAESKey,
-  decryptAESKey
+  decryptAESKey,
+  importPublicKey
 } from "./rsa.js";
 
-
-
-export async function encryptChatMessage(
+export async function encryptChatMessageForDevices(
     plaintext,
-    senderPublicKey,
-    receiverPublicKey
+    devices
 ) {
-
   const aesKey =
       await generateAESKey();
 
@@ -28,43 +25,49 @@ export async function encryptChatMessage(
       aesKey
   );
 
-  const senderEncryptedAesKey =
-      await encryptAESKey(
-          aesKey,
-          senderPublicKey
-      );
+  const keys =
+      await Promise.all(
+          devices.map(async (device) => {
+            const publicKey =
+                await importPublicKey(
+                    device.publicKey
+                );
 
-  const receiverEncryptedAesKey =
-      await encryptAESKey(
-          aesKey,
-          receiverPublicKey
+            const encryptedAesKey =
+                await encryptAESKey(
+                    aesKey,
+                    publicKey
+                );
+
+            return {
+              deviceId: device.deviceId,
+              encryptedAesKey
+            };
+          })
       );
 
   return {
     ciphertext,
     iv,
-    senderEncryptedAesKey,
-    receiverEncryptedAesKey
+    keys
   };
 }
 
-
 export async function decryptChatMessage(
-  ciphertext,
-  encryptedAesKey,
-  iv,
-  privateKey
+    ciphertext,
+    encryptedAesKey,
+    iv,
+    privateKey
 ) {
-
   const aesKey =
-    await decryptAESKey(
-      encryptedAesKey,
-      privateKey
-    );
+      await decryptAESKey(
+          encryptedAesKey,
+          privateKey
+      );
 
   return await decryptMessageAES(
-    ciphertext,
-    aesKey,
-    iv
+      ciphertext,
+      aesKey,
+      iv
   );
 }

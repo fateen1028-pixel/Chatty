@@ -13,9 +13,7 @@ public record RecentChatDTO(
 
         String cipherText,
 
-        String senderEncryptedAesKey,
-
-        String receiverEncryptedAesKey,
+        String encryptedAesKey,
 
         String iv,
 

@@ -20,7 +20,7 @@ public class CookieUtil {
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60)
                 .domain("fateen.dev")
-                .sameSite("Lax")
+                .sameSite("None") //None For Prod
                 .build();
     }
 
@@ -35,7 +35,7 @@ public class CookieUtil {
                 .path("/")
                 .maxAge(0)
                 .domain("fateen.dev")
-                .sameSite("Lax")
+                .sameSite("None") //None For Prod
                 .build();
     }
 }

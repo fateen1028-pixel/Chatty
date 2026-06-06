@@ -17,9 +17,7 @@ public record MessageResponseDTO(
 
         String cipherText,
 
-        String senderEncryptedAesKey,
-
-        String receiverEncryptedAesKey,
+        String encryptedAesKey,
 
         String iv,
 

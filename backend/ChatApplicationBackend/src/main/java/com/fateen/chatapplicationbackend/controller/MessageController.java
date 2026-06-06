@@ -6,6 +6,7 @@ import com.fateen.chatapplicationbackend.models.dto.MessageDTO;
 import com.fateen.chatapplicationbackend.models.dto.MessageResponseDTO;
 import com.fateen.chatapplicationbackend.models.dto.RecentChatDTO;
 import com.fateen.chatapplicationbackend.models.dto.UserDTO;
+import com.fateen.chatapplicationbackend.services.JwtService;
 import com.fateen.chatapplicationbackend.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -17,8 +18,14 @@ import java.util.List;
 @RequestMapping("/messages")
 public class MessageController {
 
-    @Autowired
-    private MessageService messageService;
+
+    private final MessageService messageService;
+    private final JwtService jwtService;
+
+    public MessageController(MessageService messageService, JwtService jwtService) {
+        this.messageService = messageService;
+        this.jwtService = jwtService;
+    }
 
 //    @PostMapping("{receiverId}")
 //    public String sendMessage(
@@ -41,21 +48,40 @@ public class MessageController {
     @GetMapping("{receiverId}")
     public List<MessageResponseDTO> getMessages(
             @PathVariable Long receiverId,
-            Authentication authentication
+            Authentication authentication,
+            @RequestHeader("Authorization")
+            String authHeader
     ) {
+
+        String token =
+                authHeader.substring(7);
+
+        Long deviceId =
+                jwtService.extractDeviceId(token);
 
         String currentUsername = authentication.getName();
 
         return messageService.getConversation(
                 currentUsername,
-                receiverId
+                receiverId,
+                deviceId
         );
     }
 
     @GetMapping("/chat/{receiverId}")
-    public List<MessageResponseDTO> getChatBetweenUsers(@PathVariable Long receiverId, Authentication authentication){
+    public List<MessageResponseDTO> getChatBetweenUsers(@PathVariable Long receiverId, Authentication authentication,@RequestHeader("Authorization")
+    String authHeader){
+        String token =
+                authHeader.substring(7);
+
+        Long deviceId =
+                jwtService.extractDeviceId(token);
         String senderUsername = authentication.getName();
-        return messageService.getChatMessages(receiverId,senderUsername);
+        return messageService.getChatMessages(
+                receiverId,
+                senderUsername,
+                deviceId
+        );
     }
 
 
@@ -63,11 +89,20 @@ public class MessageController {
 
     @GetMapping("/recent-chats")
     public List<RecentChatDTO> getRecentChats(
-            Authentication authentication
-    ) {
+            Authentication authentication,
+            @RequestHeader("Authorization")
+            String authHeader
+    ){
+
+        String token =
+                authHeader.substring(7);
+
+        Long deviceId =
+                jwtService.extractDeviceId(token);
 
         return messageService.getRecentChats(
-                authentication.getName()
+                authentication.getName(),
+                deviceId
         );
     }
 

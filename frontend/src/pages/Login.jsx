@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Input from '../components/Input';
 import Button from '../components/Button';
-import {initializeKeys} from "../crypto/initializekey.js";
+import { prepareDeviceForLogin } from "../crypto/initializekey.js";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,11 +16,18 @@ export default function Login() {
     e.preventDefault();
     setError('');
     try {
+      const device = await prepareDeviceForLogin(username);
       const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: "include",
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({
+          username,
+          password,
+          deviceName: device.deviceName,
+          deviceFingerprint: device.deviceFingerprint,
+          publicKey: device.publicKey
+        })
       });
 
       // 1. Check if the server returned a bad status code first
@@ -46,7 +53,6 @@ export default function Login() {
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('username', username);
 
-      await initializeKeys();
       navigate('/chat');
     } catch (err) {
       setError(err.message);

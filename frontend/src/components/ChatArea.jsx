@@ -11,8 +11,7 @@ import MessageInput from './ChatArea/MessageInput';
 import { useChatHistory } from '../hooks/useChatHistory';
 import { useOnlineUsers } from '../hooks/useOnlineUsers';
 import { useWebSocket } from '../hooks/useWebSocket';
-import { encryptChatMessage } from '../crypto/e2ee';
-import { importPublicKey } from '../crypto/rsa';
+import { encryptChatMessageForDevices } from '../crypto/e2ee';
 import {apiFetch} from "../services/api.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -241,32 +240,50 @@ export default function ChatArea({
       try {
           console.log("USING APIFETCH");
 
-          const response =
+          const senderDevicesResponse =
               await apiFetch(
-                  `/keys/public/${chat.id}`
+                  `/users/${currentUsername}/devices`
               );
 
-          console.log("STATUS =", response.status);
-
-          if (!response.ok) {
-              const body = await response.text();
-              console.log("BODY =", body);
+          if (!senderDevicesResponse.ok) {
+              console.error("Failed to fetch sender devices");
               return;
           }
 
-          const data = await response.json();
+          const receiverDevicesResponse =
+              await apiFetch(
+                  `/users/${chat.name}/devices`
+              );
 
-        const receiverPublicKey = await importPublicKey(data.receiverPublicKey);
+          if (!receiverDevicesResponse.ok) {
+              console.error("Failed to fetch receiver devices");
+              return;
+          }
 
+          const senderDevices =
+              await senderDevicesResponse.json();
 
-        const senderPublicKey = await importPublicKey(data.senderPublicKey);
+          const receiverDevices =
+              await receiverDevicesResponse.json();
 
-        const encryptedPayload =
-          await encryptChatMessage(
-            input.trim(),
-            senderPublicKey,
-            receiverPublicKey
-          );
+          const allDevices =
+              Array.from(
+                  new Map(
+                      [
+                          ...senderDevices,
+                          ...receiverDevices
+                      ].map(device => [
+                          device.deviceId,
+                          device
+                      ])
+                  ).values()
+              );
+
+          const encryptedPayload =
+              await encryptChatMessageForDevices(
+                  input.trim(),
+                  allDevices
+              );
 
         // localStorage.setItem(
         //   'sent_' + encryptedPayload.ciphertext,
@@ -279,18 +296,12 @@ export default function ChatArea({
             destination:
               '/app/chat',
 
-            body: JSON.stringify({
-
-              receiverId: chat.id,
-
-              ciphertext: encryptedPayload.ciphertext,
-
-              senderEncryptedAesKey: encryptedPayload.senderEncryptedAesKey,
-
-              receiverEncryptedAesKey: encryptedPayload.receiverEncryptedAesKey,
-
-              iv: encryptedPayload.iv
-            })
+              body: JSON.stringify({
+                  receiverId: chat.id,
+                  ciphertext: encryptedPayload.ciphertext,
+                  iv: encryptedPayload.iv,
+                  keys: encryptedPayload.keys
+              })
           });
       } catch (error) {
         console.error('Error encrypting and sending message:', error);
@@ -346,10 +357,11 @@ export default function ChatArea({
   ==========================================
   */
 
-  const isOnline =
-    onlineUsers.has(
-      chat.name
-    );
+    const normalizedChatName =
+        chat.name?.trim().toLowerCase();
+
+    const isOnline =
+        onlineUsers.has(normalizedChatName);
 
   /*
   ==========================================
@@ -357,10 +369,12 @@ export default function ChatArea({
   ==========================================
   */
 
-  const isTyping =
-    typingUsers[
-      chat.name
-    ];
+
+
+    const isTyping =
+        Boolean(
+            typingUsers[normalizedChatName]
+        );
 
   /*
   ==========================================

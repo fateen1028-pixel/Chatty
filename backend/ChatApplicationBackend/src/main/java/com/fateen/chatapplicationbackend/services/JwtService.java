@@ -35,11 +35,12 @@ public class JwtService {
         );
     }
 
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(String username, Long deviceId) {
 
         return Jwts.builder()
                 .subject(username)
                 .claim("type", "access")
+                .claim("deviceId",deviceId)
                 .issuedAt(new Date())
                 .expiration(
                         new Date(
@@ -52,10 +53,11 @@ public class JwtService {
     }
 
 
-    public String generateRefreshToken(String username){
+    public String generateRefreshToken(String username, Long deviceId){
         return Jwts.builder()
                 .subject(username)
                 .claim("type", "refresh")
+                .claim("deviceId",deviceId)
                 .issuedAt(new Date())
                 .expiration(
                         new Date(
@@ -76,13 +78,24 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .getSubject();
+                .getSubject().split(":")[0];
     }
 
     public String extractTokenType(String token) {
 
         return extractClaims(token)
                 .get("type", String.class);
+    }
+
+    public Long extractDeviceId(
+            String token
+    ) {
+
+        return extractClaims(token)
+                .get(
+                        "deviceId",
+                        Long.class
+                );
     }
 
 //    public boolean isTokenValid(String token) {

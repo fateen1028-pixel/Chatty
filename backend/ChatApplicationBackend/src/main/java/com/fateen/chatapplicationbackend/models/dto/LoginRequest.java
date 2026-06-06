@@ -4,21 +4,22 @@ package com.fateen.chatapplicationbackend.models.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
 public class LoginRequest {
 
     private String username;
     private String password;
+    private String deviceName;
+    private String publicKey;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    private String deviceFingerprint;
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+
+
 }

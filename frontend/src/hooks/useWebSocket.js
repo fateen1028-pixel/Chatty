@@ -148,35 +148,36 @@ export function useWebSocket(
                   const isSentByMe =
   msg.senderUsername === currentUsername;
 
-try {
+                  try {
+                      const privateKey =
+                          await getPrivateKey(currentUsername);
 
-  const privateKey = await getPrivateKey(currentUsername);
+                      if (
+                          privateKey &&
+                          msg.cipherText &&
+                          msg.encryptedAesKey
+                      ) {
+                          const decryptedText =
+                              await decryptChatMessage(
+                                  msg.cipherText,
+                                  msg.encryptedAesKey,
+                                  msg.iv,
+                                  privateKey
+                              );
 
-  if (privateKey && msg.cipherText) {
-    const encryptedAesKey = isSentByMe ? msg.senderEncryptedAesKey : msg.receiverEncryptedAesKey;
+                          msg.message =
+                              decryptedText;
+                      }
 
-    if (encryptedAesKey) {
-      const decryptedText = await decryptChatMessage(
-        msg.cipherText,
-        encryptedAesKey,
-        msg.iv,
-        privateKey
-      );
-      
-      msg.message = decryptedText;
-    }
-  }
+                  } catch (error) {
+                      console.error(
+                          'Decryption failed',
+                          error
+                      );
 
-} catch (error) {
-
-  console.error(
-    'Decryption failed',
-    error
-  );
-
-  msg.message =
-    "[Decryption Failed]";
-}
+                      msg.message =
+                          "[Decryption Failed]";
+                  }
 
                 
 
@@ -329,22 +330,24 @@ try {
             ============================
             */
 
-            stompClient.subscribe(
-              '/user/queue/typing',
-              (message) => {
+              stompClient.subscribe(
+                  "/user/queue/typing",
+                  (message) => {
+                      const typingEvent =
+                          JSON.parse(message.body);
 
-                const typingEvent =
-                  JSON.parse(message.body);
+                      const cleanSender =
+                          typingEvent.senderUsername
+                              ?.split(":")[0]
+                              ?.trim()
+                              ?.toLowerCase();
 
-                setTypingUsers(prev => ({
-
-                  ...prev,
-
-                  [typingEvent.senderUsername]:
-                    typingEvent.typing
-                }));
-              }
-            );
+                      setTypingUsers(prev => ({
+                          ...prev,
+                          [cleanSender]: typingEvent.typing
+                      }));
+                  }
+              );
 
             /*
             ============================
@@ -352,40 +355,33 @@ try {
             ============================
             */
 
-            stompClient.subscribe(
-              '/topic/presence',
-              (message) => {
+              stompClient.subscribe(
+                  "/topic/presence",
+                  (message) => {
+                      const presenceEvent =
+                          JSON.parse(message.body);
 
-                const presenceEvent =
-                  JSON.parse(message.body);
+                      const cleanUsername =
+                          presenceEvent.username
+                              ?.split(":")[0]
+                              ?.trim()
+                              ?.toLowerCase();
 
-                setOnlineUsers(prev => {
+                      setOnlineUsers(prev => {
+                          const updated = new Set(prev);
 
-                  const updated =
-                    new Set(prev);
+                          if (presenceEvent.type === "ONLINE") {
+                              updated.add(cleanUsername);
+                          }
 
-                  if (
-                    presenceEvent.type === 'ONLINE'
-                  ) {
+                          if (presenceEvent.type === "OFFLINE") {
+                              updated.delete(cleanUsername);
+                          }
 
-                    updated.add(
-                      presenceEvent.username
-                    );
+                          return updated;
+                      });
                   }
-
-                  if (
-                    presenceEvent.type === 'OFFLINE'
-                  ) {
-
-                    updated.delete(
-                      presenceEvent.username
-                    );
-                  }
-
-                  return updated;
-                });
-              }
-            );
+              );
           },
 
           /*

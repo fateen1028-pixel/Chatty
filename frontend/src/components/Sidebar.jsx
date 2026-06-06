@@ -43,62 +43,43 @@ useEffect(() => {
       const currentUsername = localStorage.getItem("username");
       const privateKey = await getPrivateKey(currentUsername);
 
-      const formattedContacts = await Promise.all(data.map(async chat => {
-        let text = chat.cipherText;
-        
-        if (text && privateKey) {
-          try {
-            try {
-              text = await decryptChatMessage(
-                chat.cipherText,
-                chat.senderEncryptedAesKey,
-                chat.iv,
-                privateKey
-              );
-            } catch (e1) {
-              try {
-                text = await decryptChatMessage(
-                  chat.cipherText,
-                  chat.receiverEncryptedAesKey,
-                  chat.iv,
-                  privateKey
-                );
-              } catch (e2) {
-                text = 'Encrypted message';
-              }
-            }
-          } catch (err) {
-            text = 'Encrypted message';
-          }
-        } else if (text) {
-          text = 'Encrypted message';
-        }
+        const formattedContacts = await Promise.all(
+            data.map(async chat => {
+                let text = chat.cipherText;
 
-        return {
+                if (text && privateKey && chat.encryptedAesKey) {
+                    try {
+                        text = await decryptChatMessage(
+                            chat.cipherText,
+                            chat.encryptedAesKey,
+                            chat.iv,
+                            privateKey
+                        );
+                    } catch (err) {
+                        console.error("Recent chat decrypt failed:", err);
+                        text = "Encrypted message";
+                    }
+                } else if (text) {
+                    text = "Encrypted message";
+                }
 
-        id: chat.id,
-
-        name: chat.username,
-
-        email: chat.email,
-
-        avatar:
-          'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-
-        status: 'online',
-
-        unread: 0,
-
-        lastMessage: text,
-
-        time: chat.createdAt
-          ? new Date(chat.createdAt).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
+                return {
+                    id: chat.id,
+                    name: chat.username,
+                    email: chat.email,
+                    avatar: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                    status: "offline",
+                    unread: 0,
+                    lastMessage: text,
+                    time: chat.createdAt
+                        ? new Date(chat.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        })
+                        : ""
+                };
             })
-          : ''
-
-      }}));
+        );
 
       setContacts(formattedContacts);
 
@@ -255,7 +236,7 @@ useEffect(() => {
             <form onSubmit={handleNewChat}>
               <input
                 type="text"
-                placeholder="Ex: john@example.com"
+                placeholder="Ex: John"
                 value={emailInput}
                 onChange={e => setEmailInput(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 mb-1 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-slate-400"

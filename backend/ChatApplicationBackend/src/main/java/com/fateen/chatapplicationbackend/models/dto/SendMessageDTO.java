@@ -2,9 +2,7 @@ package com.fateen.chatapplicationbackend.models.dto;
 
 import java.util.List;
 
-public record ChatMessageDTO(
-
-        Long receiverId,
+public record SendMessageDTO(
 
         String ciphertext,
 
@@ -12,4 +10,5 @@ public record ChatMessageDTO(
 
         List<DeviceKeyDTO> keys
 
-) {}
+) {
+}

@@ -1,5 +1,6 @@
 package com.fateen.chatapplicationbackend.services;
 
+import com.fateen.chatapplicationbackend.models.Device;
 import com.fateen.chatapplicationbackend.models.RefreshToken;
 import com.fateen.chatapplicationbackend.models.User;
 import com.fateen.chatapplicationbackend.repository.RefreshTokenRepo;
@@ -78,7 +79,8 @@ public class RefreshTokenService {
     public void createRefreshToken(
             String username,
             String token,
-            String familyId
+            String familyId,
+            Device device
     ) {
 
 //        User user =
@@ -97,8 +99,9 @@ public class RefreshTokenService {
         refreshToken.setRevoked(false);
 
         refreshToken.setExpiryDate(
-                LocalDateTime.now().plusDays(7)
-        );
+                LocalDateTime.now().plusDays(7));
+
+        refreshToken.setDevice(device);
 
         refreshTokenRepo.save(refreshToken);
     }
@@ -111,6 +114,21 @@ public class RefreshTokenService {
                 &&
                 token.getExpiryDate()
                         .isAfter(LocalDateTime.now());
+    }
+
+    public void revokeAllByDevice(
+            Device device
+    ) {
+
+        List<RefreshToken> tokens =
+                refreshTokenRepo.findByDevice(device);
+
+        for (RefreshToken token : tokens) {
+
+            token.setRevoked(true);
+        }
+
+        refreshTokenRepo.saveAll(tokens);
     }
 
     public void revoke(

@@ -153,6 +153,15 @@ public class AuthController {
                         oldRefreshToken.getToken()
                 );
 
+        Device device =
+                oldRefreshToken.getDevice();
+
+        if (device == null) {
+            throw new RuntimeException(
+                    "Refresh token has no associated device"
+            );
+        }
+
     /*
     ROTATE TOKEN
     */
@@ -163,18 +172,21 @@ public class AuthController {
 
         String newAccessToken =
                 jwtService.generateAccessToken(
-                        username
+                        username,
+                        device.getId()
                 );
 
         String newRefreshToken =
                 jwtService.generateRefreshToken(
-                        username
+                        username,
+                        device.getId()
                 );
 
         refreshTokenService.createRefreshToken(
                 username,
                 newRefreshToken,
-                oldRefreshToken.getFamilyId()
+                oldRefreshToken.getFamilyId(),
+                oldRefreshToken.getDevice()
         );
 
         ResponseCookie cookie =

@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
-
 import { apiFetch } from '../services/api';
+
+function normalizeUsername(username) {
+  return username
+      ?.split(":")[0]
+      ?.trim()
+      ?.toLowerCase();
+}
 
 export function useOnlineUsers(accessToken) {
   const [onlineUsers, setOnlineUsers] = useState(new Set());
@@ -19,7 +25,12 @@ export function useOnlineUsers(accessToken) {
         }
 
         const data = await response.json();
-        setOnlineUsers(new Set(data));
+
+        const normalizedUsers = data
+            .map(normalizeUsername)
+            .filter(Boolean);
+
+        setOnlineUsers(new Set(normalizedUsers));
       } catch (error) {
         console.error(error);
       }

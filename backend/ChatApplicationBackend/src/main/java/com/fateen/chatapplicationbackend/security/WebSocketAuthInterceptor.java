@@ -50,9 +50,21 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                     String username =
                             jwtService.extractUsername(token);
 
+                    Long deviceId =
+                            jwtService.extractDeviceId(token);
+
+                    accessor.getSessionAttributes()
+                            .put(
+                                    "deviceId",
+                                    deviceId
+                            );
+
+                    String principalName =
+                            username + ":" + deviceId;
+
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
-                                    username,
+                                    principalName,
                                     null,
                                     List.of()
                             );

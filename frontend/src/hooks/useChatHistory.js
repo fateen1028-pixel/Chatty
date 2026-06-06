@@ -28,41 +28,46 @@ export function useChatHistory(chat, accessToken) {
         const privateKey = await getPrivateKey(currentUsername);
 
         // 2. Parallel decryption in-memory via Promise.all
-        const decryptedData = await Promise.all(data.map(async (msg) => {
-          if (msg.message) return msg;
-          try {
-            if (privateKey && msg.cipherText) {
-              let decryptedText;
-              try {
-                decryptedText = await decryptChatMessage(
-                    msg.cipherText,
-                    msg.senderEncryptedAesKey,
-                    msg.iv,
-                    privateKey
-                );
-              } catch (e1) {
-                try {
-                  decryptedText = await decryptChatMessage(
-                      msg.cipherText,
-                      msg.receiverEncryptedAesKey,
-                      msg.iv,
-                      privateKey
-                  );
-                } catch (e2) {
-                  console.error('Decryption failed for both keys on msg ID:', msg.id);
-                  return { ...msg, message: '[Decryption Failed]' };
-                }
-              }
+        const decryptedData =
+            await Promise.all(
+                data.map(async (msg) => {
+                  if (msg.message) return msg;
 
-              // Transient key injection for UI rendering
-              return { ...msg, message: decryptedText };
-            }
-          } catch (e) {
-            console.error('Unexpected error decrypting msg ID:', msg.id, e);
-            return { ...msg, message: '[Decryption Error]' };
-          }
-          return msg;
-        }));
+                  try {
+                    if (
+                        privateKey &&
+                        msg.cipherText &&
+                        msg.encryptedAesKey
+                    ) {
+                      const decryptedText =
+                          await decryptChatMessage(
+                              msg.cipherText,
+                              msg.encryptedAesKey,
+                              msg.iv,
+                              privateKey
+                          );
+
+                      return {
+                        ...msg,
+                        message: decryptedText
+                      };
+                    }
+                  } catch (error) {
+                    console.error(
+                        "Decryption failed for msg ID:",
+                        msg.id,
+                        error
+                    );
+
+                    return {
+                      ...msg,
+                      message: "[Decryption Failed]"
+                    };
+                  }
+
+                  return msg;
+                })
+            );
 
         // 3. Update state map with deduplication
         setMessagesMap(prev => {

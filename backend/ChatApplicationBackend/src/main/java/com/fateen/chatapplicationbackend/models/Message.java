@@ -36,12 +36,6 @@ public class Message {
 
 
     @Column(columnDefinition = "TEXT")
-    private String senderEncryptedAesKey;
-
-    @Column(columnDefinition = "TEXT")
-    private String receiverEncryptedAesKey;
-
-    @Column(columnDefinition = "TEXT")
     private String iv;
 
     @Enumerated(EnumType.STRING)

@@ -27,6 +27,10 @@ public class RefreshToken {
 
     private boolean revoked = false;
 
+    @ManyToOne
+    @JoinColumn(name = "device_id")
+    private Device device;
+
 
     @Column(nullable = false)
     private String familyId;
@@ -35,7 +39,8 @@ public class RefreshToken {
             String token,
             String username,
             LocalDateTime expiryDate,
-            String familyId
+            String familyId,
+            Device device
     ) {
 
         this.token = token;
@@ -47,5 +52,7 @@ public class RefreshToken {
         this.familyId = familyId;
 
         this.revoked = false;
+
+        this.device = device;
     }
 }
