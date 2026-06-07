@@ -28,6 +28,7 @@ export default function ChatArea({
   */
 
   const [input, setInput] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const isTypingRef = useRef(false);
@@ -175,11 +176,14 @@ export default function ChatArea({
   */
 
     const handleTyping = (value) => {
+        if (isSending) {
+            return;
+        }
+
         setInput(value);
 
         if (!stompClientRef.current?.connected) return;
 
-        // send "typing true" ONLY ONCE
         if (!isTypingRef.current) {
             isTypingRef.current = true;
 
@@ -192,7 +196,6 @@ export default function ChatArea({
             });
         }
 
-        // reset stop timer
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current);
         }
@@ -216,118 +219,118 @@ export default function ChatArea({
   ==========================================
   */
 
-  const handleSend =
-    async (e) => {
+    const handleSend =
+        async (e) => {
 
-      e.preventDefault();
+            e.preventDefault();
 
-      if (
-        !input.trim() ||
-        !chat
-      ) {
-        return;
-      }
+            if (
+                !input.trim() ||
+                !chat ||
+                isSending
+            ) {
+                return;
+            }
 
-      if (
-        !stompClientRef.current
-          ?.connected
-      ) {
-        return;
-      }
+            if (
+                !stompClientRef.current
+                    ?.connected
+            ) {
+                return;
+            }
 
-      console.log("TOKEN = ", localStorage.getItem("accessToken"));
+            const messageToSend =
+                input.trim();
 
-      try {
-          console.log("USING APIFETCH");
+            setIsSending(true);
 
-          const senderDevicesResponse =
-              await apiFetch(
-                  `/users/${currentUsername}/devices`
-              );
+            try {
+                const senderDevicesResponse =
+                    await apiFetch(
+                        `/users/${currentUsername}/devices`
+                    );
 
-          if (!senderDevicesResponse.ok) {
-              console.error("Failed to fetch sender devices");
-              return;
-          }
+                if (!senderDevicesResponse.ok) {
+                    console.error("Failed to fetch sender devices");
+                    return;
+                }
 
-          const receiverDevicesResponse =
-              await apiFetch(
-                  `/users/${chat.name}/devices`
-              );
+                const receiverDevicesResponse =
+                    await apiFetch(
+                        `/users/${chat.name}/devices`
+                    );
 
-          if (!receiverDevicesResponse.ok) {
-              console.error("Failed to fetch receiver devices");
-              return;
-          }
+                if (!receiverDevicesResponse.ok) {
+                    console.error("Failed to fetch receiver devices");
+                    return;
+                }
 
-          const senderDevices =
-              await senderDevicesResponse.json();
+                const senderDevices =
+                    await senderDevicesResponse.json();
 
-          const receiverDevices =
-              await receiverDevicesResponse.json();
+                const receiverDevices =
+                    await receiverDevicesResponse.json();
 
-          const allDevices =
-              Array.from(
-                  new Map(
-                      [
-                          ...senderDevices,
-                          ...receiverDevices
-                      ].map(device => [
-                          device.deviceId,
-                          device
-                      ])
-                  ).values()
-              );
+                const allDevices =
+                    Array.from(
+                        new Map(
+                            [
+                                ...senderDevices,
+                                ...receiverDevices
+                            ].map(device => [
+                                device.deviceId,
+                                device
+                            ])
+                        ).values()
+                    );
 
-          const encryptedPayload =
-              await encryptChatMessageForDevices(
-                  input.trim(),
-                  allDevices
-              );
+                const encryptedPayload =
+                    await encryptChatMessageForDevices(
+                        messageToSend,
+                        allDevices
+                    );
 
-        // localStorage.setItem(
-        //   'sent_' + encryptedPayload.ciphertext,
-        //   input.trim()
-        // );
+                stompClientRef.current
+                    .publish({
+                        destination:
+                            '/app/chat',
 
-        stompClientRef.current
-          .publish({
+                        body: JSON.stringify({
+                            receiverId: chat.id,
+                            ciphertext: encryptedPayload.ciphertext,
+                            iv: encryptedPayload.iv,
+                            keys: encryptedPayload.keys
+                        })
+                    });
 
-            destination:
-              '/app/chat',
+                /*
+                Stop typing
+                */
 
-              body: JSON.stringify({
-                  receiverId: chat.id,
-                  ciphertext: encryptedPayload.ciphertext,
-                  iv: encryptedPayload.iv,
-                  keys: encryptedPayload.keys
-              })
-          });
-      } catch (error) {
-        console.error('Error encrypting and sending message:', error);
-      }
+                stompClientRef.current
+                    .publish({
+                        destination:
+                            '/app/chat.typing',
 
-      /*
-      Stop typing
-      */
+                        body: JSON.stringify({
+                            receiverId: chat.id,
+                            typing: false
+                        })
+                    });
 
-      stompClientRef.current
-        .publish({
+                isTypingRef.current = false;
 
-          destination:
-            '/app/chat.typing',
+                setInput('');
 
-          body: JSON.stringify({
-
-            receiverId:
-              chat.id,
-
-            typing: false
-          })
-        });
-
-      setInput('');
-    };
+            } catch (error) {
+                console.error(
+                    'Error encrypting and sending message:',
+                    error
+                );
+            } finally {
+                setIsSending(false);
+            }
+        };
 
   /*
   ==========================================
@@ -399,11 +402,12 @@ export default function ChatArea({
         messagesEndRef={messagesEndRef} 
       />
 
-      <MessageInput 
-        input={input} 
-        handleTyping={handleTyping} 
-        handleSend={handleSend} 
-      />
+        <MessageInput
+            input={input}
+            isSending={isSending}
+            handleTyping={handleTyping}
+            handleSend={handleSend}
+        />
 
     </div>
   );

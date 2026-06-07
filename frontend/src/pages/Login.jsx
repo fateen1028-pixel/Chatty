@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff ,LoaderCircle} from 'lucide-react';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { prepareDeviceForLogin } from "../crypto/initializekey.js";
@@ -10,54 +10,65 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      const device = await prepareDeviceForLogin(username);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: "include",
-        body: JSON.stringify({
-          username,
-          password,
-          deviceName: device.deviceName,
-          deviceFingerprint: device.deviceFingerprint,
-          publicKey: device.publicKey
-        })
-      });
+    const handleLogin = async (e) => {
+        e.preventDefault();
 
-      // 1. Check if the server returned a bad status code first
-      if (!response.ok) {
-        let errorMessage = 'Login failed';
-        try {
-          // Try to safely parse the custom structured JSON error from backend
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch (parseError) {
-          // Fallback if the body isn't JSON formatted
-          errorMessage = `Server Error: ${response.statusText || response.status}`;
+        if (isLoading) {
+            return;
         }
-        throw new Error(errorMessage);
-      }
 
-      // 2. Safe to parse successful data payload now
-      const data = await response.json();
-      if (!data.accessToken) {
-        throw new Error("Invalid server response structure");
-      }
+        setError('');
+        setIsLoading(true);
 
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('username', username);
+        try {
+            const device = await prepareDeviceForLogin(username);
 
-      navigate('/chat');
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
+                body: JSON.stringify({
+                    username,
+                    password,
+                    deviceName: device.deviceName,
+                    deviceFingerprint: device.deviceFingerprint,
+                    publicKey: device.publicKey
+                })
+            });
+
+            if (!response.ok) {
+                let errorMessage = 'Login failed';
+
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (parseError) {
+                    errorMessage = `Server Error: ${response.statusText || response.status}`;
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+
+            if (!data.accessToken) {
+                throw new Error("Invalid server response structure");
+            }
+
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('username', username);
+
+            navigate('/chat');
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-[#0B0C0E] transition-colors relative overflow-hidden">
@@ -79,29 +90,32 @@ export default function Login() {
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <Input
-                type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                icon={Mail}
-                required
-              />
+                <Input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    icon={Mail}
+                    required
+                    disabled={isLoading}
+                />
             </div>
             <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                icon={Lock}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-              >
+                <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    icon={Lock}
+                    required
+                    disabled={isLoading}
+                />
+                <button
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-50"
+                >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
@@ -117,7 +131,20 @@ export default function Login() {
             </a>
           </div>
 
-          <Button type="submit" className="w-full">Sign In</Button>
+            <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+                {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+      <LoaderCircle className="w-4 h-4 animate-spin" />
+      Signing in...
+    </span>
+                ) : (
+                    "Sign In"
+                )}
+            </Button>
         </form>
 
         <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
