@@ -1,8 +1,8 @@
 # Chatty 💬🔐
 
-A full-stack real-time **end-to-end encrypted chat application** built with **Spring Boot**, **React**, **WebSockets**, and **Web Crypto API**.
+A full-stack real-time **end-to-end encrypted chat application** built with **Spring Boot**, **React**, **WebSockets**, and the **Web Crypto API**.
 
-Chatty supports secure authentication, multi-device login, per-device encryption keys, real-time messaging, online presence, delivery/read receipts, typing indicators, and a modern responsive UI.
+Chatty supports secure authentication, device-aware login, multi-device encrypted messaging, encrypted recovery backup, trusted-device approval, online presence, delivery/read receipts, typing indicators, and a modern responsive UI.
 
 ---
 
@@ -21,6 +21,8 @@ Chatty supports secure authentication, multi-device login, per-device encryption
 * Stateless backend authentication
 * Device fingerprint tracking
 * Multi-browser / multi-device account support
+* Device removal / unlinking
+* Refresh token revocation per device
 
 ---
 
@@ -32,11 +34,12 @@ Chatty uses client-side encryption. The backend never receives plaintext message
 
 * Messages are encrypted in the browser before sending
 * AES-GCM is used for message encryption
-* RSA-OAEP is used to encrypt the AES key
-* Every device has its own RSA key pair
+* RSA-OAEP is used to encrypt AES keys
+* Each device/login has a device identity
 * Private keys are stored locally in IndexedDB
 * Public keys are stored on the backend per device
-* Every message stores one encrypted AES key per target device
+* Every message stores encrypted AES keys for sender and receiver devices
+* Backend stores only ciphertext, IV, and encrypted AES keys
 
 ### E2EE Flow
 
@@ -49,17 +52,19 @@ Message is encrypted using AES-GCM
     ↓
 AES key is encrypted separately for every sender + receiver device
     ↓
-Backend stores only:
+Backend stores:
       ciphertext
       iv
       encrypted AES keys per device
+    ↓
+Each device decrypts using its local private key
 ```
 
 ---
 
-## 📱 Multi-Device Support
+# 📱 Multi-Device Support
 
-Each login device/browser gets its own identity.
+Each login device/browser gets its own device record.
 
 ### Device Model
 
@@ -79,8 +84,8 @@ Device
 
 * Same account on multiple browsers
 * Same account on multiple devices
-* Separate private key per device
 * Device-specific encrypted AES keys
+* Device-specific WebSocket delivery
 * Device removal / unlinking
 * Refresh tokens tied to devices
 * WebSocket sessions identified as:
@@ -99,35 +104,146 @@ Fateen:3
 
 ---
 
-## ⚠️ New Device Limitation
+# 🔑 New Device Access
 
-A completely new device cannot decrypt older messages automatically.
+A new device cannot read old encrypted messages just because the user logged in.
 
 Why?
 
 ```text
 Old messages were encrypted before the new device existed.
-So those old messages do not contain AES keys encrypted for the new device.
+So those old messages may not contain AES keys directly encrypted for the new device ID.
 ```
 
-Current behavior:
+Chatty solves this using two recovery paths:
 
 ```text
-Old messages → unavailable on new device
-New messages → decrypt normally
+1. Trusted-device approval
+2. Recovery phrase backup
 ```
-
-Planned future solution:
-
-```text
-Trusted device key sync / key rewrapping
-```
-
-Where an existing trusted device decrypts old AES keys locally and re-encrypts them for the new device.
 
 ---
 
-## 💬 Real-Time Messaging
+## ✅ Trusted-Device Approval
+
+Use this when the user still has an old trusted device where chats are readable.
+
+### Flow
+
+```text
+New device logs in
+    ↓
+New device creates a temporary RSA key pair
+    ↓
+New device creates an approval request
+    ↓
+New device shows a 6-digit verification code
+    ↓
+Old trusted device sees the pending request
+    ↓
+User checks that the code matches on both devices
+    ↓
+Old trusted device encrypts the chat access key package
+    ↓
+Backend stores only the encrypted approval package
+    ↓
+New device downloads the encrypted package
+    ↓
+New device decrypts it locally
+    ↓
+New device restores chat access
+```
+
+### Important Security Rule
+
+The backend never receives plaintext private keys.
+
+Trusted-device approval uses hybrid encryption:
+
+```text
+Exported private key
+    ↓
+Encrypted with temporary AES-GCM key
+    ↓
+Temporary AES key encrypted using new device temporary RSA public key
+    ↓
+Encrypted package sent through backend
+```
+
+---
+
+## 🧰 Recovery Phrase Backup
+
+Use this when the old trusted device is lost.
+
+### Flow
+
+```text
+Trusted device creates recovery phrase
+    ↓
+Private key is encrypted locally using AES-GCM
+    ↓
+AES key is derived from the recovery phrase using PBKDF2
+    ↓
+Only encrypted backup is uploaded
+    ↓
+Recovery phrase is never sent to backend
+```
+
+### Recovery Flow
+
+```text
+User logs in on new device
+    ↓
+User enters recovery phrase locally
+    ↓
+Frontend downloads encrypted backup
+    ↓
+Private key is decrypted locally
+    ↓
+Private key is saved in IndexedDB
+    ↓
+Current device public key is updated
+    ↓
+Old chats become readable again
+```
+
+### Failure Rule
+
+```text
+No trusted device + no recovery phrase = old encrypted messages cannot be restored
+```
+
+This is expected behavior in end-to-end encrypted systems.
+
+---
+
+# 🧠 Device Trust Detection
+
+The frontend does not mark a device trusted just because a local key exists.
+
+A new browser can generate a fresh key pair during login, but that does not mean it can read old chats.
+
+So Chatty verifies device access by checking whether the current local private key can decrypt recent chat AES keys.
+
+### Trust Check
+
+```text
+Check local private key
+    ↓
+Fetch recent chats
+    ↓
+Fetch recent conversation keys
+    ↓
+Try decrypting encrypted AES keys locally
+    ↓
+If decrypt succeeds → trusted device
+If decrypt fails → device needs recovery/approval
+```
+
+---
+
+# 💬 Real-Time Messaging
 
 * Real-time messaging using STOMP over WebSockets
 * Bi-directional communication
@@ -137,10 +253,11 @@ Where an existing trusted device decrypts old AES keys locally and re-encrypts t
 * Conversation history loading
 * Duplicate message prevention
 * Automatic sidebar refresh after new messages
+* Encrypted message payloads sent per device
 
 ---
 
-## 🟢 Presence System
+# 🟢 Presence System
 
 Tracks online/offline status in real time.
 
@@ -161,7 +278,7 @@ Fateen → Offline
 
 ---
 
-## ✍️ Typing Indicators
+# ✍️ Typing Indicators
 
 Typing status is sent over WebSocket.
 
@@ -181,7 +298,7 @@ Frontend sends typing=false after timeout or message send
 
 ---
 
-## ✅ Message Status System
+# ✅ Message Status System
 
 Implemented real-time message lifecycle tracking.
 
@@ -210,7 +327,7 @@ Implemented real-time message lifecycle tracking.
 
 ---
 
-## 🧠 Smart Frontend State Management
+# 🧠 Smart Frontend State Management
 
 * Cached conversation state
 * Optimized WebSocket message updates
@@ -220,10 +337,11 @@ Implemented real-time message lifecycle tracking.
 * Loading states for login/register/chat/sidebar
 * Disabled send button during encryption/send
 * Responsive mobile layout
+* Encrypted chat access page with guided recovery flow
 
 ---
 
-## 🎨 Modern UI
+# 🎨 Modern UI
 
 * Responsive chat interface
 * Dark mode support
@@ -235,6 +353,8 @@ Implemented real-time message lifecycle tracking.
 * Tailwind CSS styling
 * Mobile-friendly layout
 * Custom app favicon/icon support
+* Guided encrypted-access UI
+* Recovery and approval flows designed around user problems, not developer terminology
 
 ---
 
@@ -259,12 +379,12 @@ Implemented real-time message lifecycle tracking.
 * React
 * Vite
 * Tailwind CSS
-* Context API
 * STOMP.js
 * SockJS
 * Lucide Icons
 * Web Crypto API
 * IndexedDB
+* LocalStorage for non-secret device metadata
 
 ---
 
@@ -375,6 +495,12 @@ Frontend runs on:
 http://localhost:5173
 ```
 
+Build frontend:
+
+```bash
+npm run build
+```
+
 ---
 
 # 🔌 WebSocket Architecture
@@ -385,15 +511,11 @@ Chatty uses:
 STOMP over WebSockets
 ```
 
----
-
 ## WebSocket Endpoint
 
 ```text
 /ws
 ```
-
----
 
 ## WebSocket Principal Format
 
@@ -413,6 +535,8 @@ This allows the backend to deliver device-specific encrypted message payloads.
 
 ---
 
+# 📡 WebSocket Destinations
+
 ## Publish Destinations
 
 | Destination           | Purpose                    |
@@ -421,8 +545,6 @@ This allows the backend to deliver device-specific encrypted message payloads.
 | `/app/chat.read`      | Mark messages as read      |
 | `/app/chat.delivered` | Mark messages as delivered |
 | `/app/chat.typing`    | Send typing status         |
-
----
 
 ## Subscribe Destinations
 
@@ -562,6 +684,69 @@ UNIQUE(message_id, device_id)
 
 ---
 
+## KeyBackup Entity
+
+Stores encrypted recovery backup.
+
+```text
+KeyBackup
+├── id
+├── user_id
+├── version
+├── algorithm
+├── kdf
+├── hash
+├── iterations
+├── salt
+├── iv
+├── encryptedPrivateKey
+├── publicKey
+├── createdAt
+└── updatedAt
+```
+
+Important:
+
+```text
+The recovery phrase is never stored.
+The raw private key is never stored.
+Only encryptedPrivateKey is stored.
+```
+
+---
+
+## DeviceApproval Entity
+
+Stores temporary encrypted approval flow data.
+
+```text
+DeviceApproval
+├── id
+├── user_id
+├── new_device_id
+├── verificationCode
+├── tempPublicKey
+├── encryptedPrivateKey
+├── encryptedAesKey
+├── iv
+├── accountPublicKey
+├── status
+├── createdAt
+├── expiresAt
+└── approvedAt
+```
+
+Supported statuses:
+
+```text
+PENDING
+APPROVED
+REJECTED
+EXPIRED
+```
+
+---
+
 ## RefreshToken Entity
 
 ```text
@@ -590,6 +775,10 @@ public enum MessageStatus {
 ---
 
 # 📡 REST API Endpoints
+
+All protected endpoints require JWT authentication.
+
+---
 
 ## 🔐 Authentication
 
@@ -663,8 +852,6 @@ Revokes the current refresh token and clears the refresh cookie.
 
 # 💬 Messages
 
-All message endpoints require JWT authentication.
-
 ## Get Recent Chats
 
 ```http
@@ -681,7 +868,7 @@ Returns recent chats with encrypted message preview and the AES key encrypted fo
 GET /messages/chat/{receiverId}
 ```
 
-Returns encrypted messages and per-device encrypted AES keys for the current device.
+Returns encrypted messages and encrypted AES keys for the current device.
 
 ---
 
@@ -746,6 +933,24 @@ GET /devices/me
 
 ---
 
+## Update Current Device Public Key
+
+```http
+PUT /devices/current/public-key
+```
+
+Used after recovery or trusted-device approval.
+
+Request:
+
+```json
+{
+  "publicKey": "restored-account-public-key"
+}
+```
+
+---
+
 ## Remove Device
 
 ```http
@@ -756,18 +961,277 @@ Marks a device inactive and revokes refresh tokens linked to it.
 
 ---
 
+# 🧰 Recovery Backup API
+
+## Get Backup Status
+
+```http
+GET /key-backup/status
+```
+
+Response:
+
+```json
+{
+  "enabled": true,
+  "lastUpdated": "2026-06-12T10:00:00Z"
+}
+```
+
+---
+
+## Save Encrypted Backup
+
+```http
+POST /key-backup
+```
+
+Request:
+
+```json
+{
+  "version": 1,
+  "algorithm": "AES-GCM",
+  "kdf": "PBKDF2",
+  "hash": "SHA-256",
+  "iterations": 310000,
+  "salt": "base64-salt",
+  "iv": "base64-iv",
+  "encryptedPrivateKey": "base64-encrypted-private-key",
+  "publicKey": "base64-public-key",
+  "createdAt": "2026-06-12T10:00:00Z"
+}
+```
+
+---
+
+## Get Encrypted Backup
+
+```http
+GET /key-backup
+```
+
+Returns encrypted backup data.
+
+The backend does not return or store the recovery phrase.
+
+---
+
+# 📲 Device Approval API
+
+## Create Approval Request
+
+Used from the new device.
+
+```http
+POST /device-approvals/request
+```
+
+Request:
+
+```json
+{
+  "tempPublicKey": "base64-temporary-public-key"
+}
+```
+
+Response:
+
+```json
+{
+  "approvalId": 1,
+  "verificationCode": "483921",
+  "status": "PENDING",
+  "expiresAt": "2026-06-12T10:05:00Z"
+}
+```
+
+---
+
+## Get Pending Requests
+
+Used from a trusted device.
+
+```http
+GET /device-approvals/pending
+```
+
+Response:
+
+```json
+[
+  {
+    "approvalId": 1,
+    "newDeviceId": 5,
+    "deviceName": "Firefox Browser",
+    "verificationCode": "483921",
+    "tempPublicKey": "base64-temporary-public-key",
+    "createdAt": "2026-06-12T10:00:00Z",
+    "expiresAt": "2026-06-12T10:05:00Z"
+  }
+]
+```
+
+---
+
+## Approve Device
+
+Used from a trusted device.
+
+```http
+POST /device-approvals/{approvalId}/approve
+```
+
+Request:
+
+```json
+{
+  "encryptedPrivateKey": "base64-encrypted-private-key",
+  "encryptedAesKey": "base64-rsa-encrypted-aes-key",
+  "iv": "base64-iv",
+  "accountPublicKey": "base64-account-public-key"
+}
+```
+
+---
+
+## Reject Device
+
+```http
+POST /device-approvals/{approvalId}/reject
+```
+
+---
+
+## Get Current Device Approval Result
+
+Used from the new device.
+
+```http
+GET /device-approvals/current/result
+```
+
+Response when approved:
+
+```json
+{
+  "approvalId": 1,
+  "status": "APPROVED",
+  "encryptedPrivateKey": "base64-encrypted-private-key",
+  "encryptedAesKey": "base64-rsa-encrypted-aes-key",
+  "iv": "base64-iv",
+  "accountPublicKey": "base64-account-public-key",
+  "expiresAt": "2026-06-12T10:05:00Z",
+  "approvedAt": "2026-06-12T10:02:00Z"
+}
+```
+
+---
+
 # 🔒 Security Model
 
 * Backend never stores plaintext messages
-* Backend never stores private keys
-* Backend only stores public device keys
-* Each device has its own private key
-* Each message has one encrypted AES key per device
+* Backend never receives plaintext private keys
+* Backend never receives recovery phrases
+* Backend only stores public keys and encrypted blobs
+* Private keys are stored locally in IndexedDB
+* Each message has one encrypted AES key per target device
 * Removed devices stop receiving future message keys
 * JWT includes `deviceId`
 * WebSocket sessions are authenticated
 * Refresh tokens are rotated and revocable
 * Refresh tokens are tied to devices
+* Device approval uses verification codes
+* Recovery phrase uses PBKDF2 + AES-GCM
+* Message encryption uses AES-GCM
+* Key wrapping uses RSA-OAEP
+
+---
+
+# 🧪 Stress-Tested Scenarios
+
+## Trusted Device + Backup Disabled
+
+Expected:
+
+```text
+Device status: Trusted
+Recommended action: Enable recovery phrase
+```
+
+---
+
+## Trusted Device + Backup Enabled
+
+Expected:
+
+```text
+Device status: Trusted
+Recovery phrase: Enabled
+No action needed
+```
+
+---
+
+## Trusted Device + Pending Approval Request
+
+Expected:
+
+```text
+Device status: Trusted
+Device approval menu opens
+Pending request shown
+User must compare verification code
+```
+
+---
+
+## New Device Before Recovery
+
+Expected:
+
+```text
+Device status: Needs chat access
+Recover chats menu opens
+User chooses trusted-device approval or recovery phrase
+```
+
+---
+
+## New Device + Old Trusted Device Available
+
+Expected:
+
+```text
+User starts approval request
+New device shows verification code
+Trusted device approves matching code
+New device restores chat access
+```
+
+---
+
+## New Device + Old Device Lost + Recovery Phrase Available
+
+Expected:
+
+```text
+User enters recovery phrase
+Private key is restored locally
+Current device public key is updated
+Old chats become readable
+```
+
+---
+
+## New Device + No Trusted Device + No Recovery Phrase
+
+Expected:
+
+```text
+Recovery is impossible
+Old encrypted messages stay locked
+```
 
 ---
 
@@ -784,6 +1248,10 @@ This project includes practical implementations of:
 * AES-GCM encryption
 * RSA-OAEP key wrapping
 * IndexedDB private-key storage
+* Encrypted recovery backup
+* PBKDF2 recovery phrase encryption
+* Trusted-device approval
+* Device verification codes
 * Presence systems
 * Delivery/read receipts
 * Typing indicators
@@ -798,7 +1266,6 @@ This project includes practical implementations of:
 
 # 🚧 Planned Features
 
-* Trusted-device history sync for new devices
 * Message pagination
 * Unread message counts
 * File/image sharing
@@ -808,29 +1275,25 @@ This project includes practical implementations of:
 * Docker deployment
 * CI/CD pipeline
 * Better device management UI
-* Encrypted backup/recovery flow
+* Expired approval cleanup job
+* Automatic approval polling
+* Stronger audit logs for device approval
+* Optional passkey-based device trust
 
 ---
 
-# ⚠️ Current Limitation
+# ⚠️ Current Notes
 
-Newly added devices cannot decrypt old messages unless old message keys are rewrapped for that device.
-
-This is expected in real E2EE systems.
-
-Future solution:
+Chatty currently supports restoring old chat access through:
 
 ```text
-Existing trusted device approves new device
-    ↓
-Existing device decrypts old AES keys locally
-    ↓
-Existing device encrypts AES keys for new device public key
-    ↓
-Backend stores new MessageDeviceKey rows
-    ↓
-New device can decrypt old history
+1. Trusted-device approval
+2. Recovery phrase backup
 ```
+
+Without either of those, old encrypted messages cannot be restored.
+
+This is intentional and consistent with end-to-end encryption.
 
 ---
 
