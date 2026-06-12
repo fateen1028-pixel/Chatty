@@ -70,10 +70,20 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/ws/**","/").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        .requestMatchers(
+                                "/auth/**",
+                                "/ws/**",
+                                "/"
+                        ).permitAll()
+
+                        .requestMatchers("/key-backup/**").authenticated()
+                        .requestMatchers("/device-approvals/**").authenticated()
                         .requestMatchers("/presence/**").authenticated()
+
                         .anyRequest().authenticated()
+                
                 )
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

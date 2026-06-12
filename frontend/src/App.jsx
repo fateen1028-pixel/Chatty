@@ -5,27 +5,47 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Chat from './pages/Chat';
+import Backup from './pages/Backup.jsx';
 
 const PublicRoute = ({ children }) => {
   const accessToken = localStorage.getItem('accessToken');
+
   if (accessToken) {
     return <Navigate to="/chat" replace />;
   }
+
   return children;
 };
 
 function App() {
   return (
-    <ThemeProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
+            <Route
+                path="/chat"
+                element={
+                  <ProtectedRoute>
+                    <Chat />
+                  </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/backup"
+                element={
+                  <ProtectedRoute>
+                    <Backup />
+                  </ProtectedRoute>
+                }
+            />
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
   );
 }
 

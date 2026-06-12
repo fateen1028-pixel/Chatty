@@ -65,22 +65,67 @@ public class MessageService {
         }
     }
 
+    private Optional<MessageDeviceKey> findReadableKeyForCurrentDevice(
+            Message message,
+            User currentUser,
+            Long currentDeviceId
+    ) {
+        Optional<MessageDeviceKey> directKey =
+                messageDeviceKeyRepository.findByMessageIdAndDeviceId(
+                        message.getId(),
+                        currentDeviceId
+                );
+
+        if (directKey.isPresent()) {
+            return directKey;
+        }
+
+        Device currentDevice =
+                deviceRepository.findByIdAndActiveTrue(currentDeviceId)
+                        .orElseThrow(() -> new RuntimeException("Current device not found"));
+
+        String currentPublicKey =
+                currentDevice.getPublicKey();
+
+        if (currentPublicKey == null || currentPublicKey.isBlank()) {
+            return Optional.empty();
+        }
+
+        List<MessageDeviceKey> fallbackKeys =
+                messageDeviceKeyRepository.findKeysForSameUserAndPublicKey(
+                        message.getId(),
+                        currentUser.getId(),
+                        currentPublicKey
+                );
+
+        if (fallbackKeys.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(fallbackKeys.get(0));
+    }
+
     public MessageResponseDTO getMessageForDevice(
             Long messageId,
             Long deviceId
     ) {
-
         Message message =
                 messageRepo.findById(messageId)
                         .orElseThrow();
 
-        MessageDeviceKey key =
-                messageDeviceKeyRepository
-                        .findByMessageIdAndDeviceId(
-                                messageId,
-                                deviceId
-                        )
-                        .orElseThrow();
+        Device currentDevice =
+                deviceRepository.findByIdAndActiveTrue(deviceId)
+                        .orElseThrow(() -> new RuntimeException("Current device not found"));
+
+        User currentUser =
+                currentDevice.getUser();
+
+        Optional<MessageDeviceKey> key =
+                findReadableKeyForCurrentDevice(
+                        message,
+                        currentUser,
+                        deviceId
+                );
 
         return new MessageResponseDTO(
                 message.getId(),
@@ -88,7 +133,7 @@ public class MessageService {
                 message.getSender().getUsername(),
                 message.getReceiver().getId(),
                 message.getCiphertext(),
-                key.getEncryptedAesKey(),
+                key.map(MessageDeviceKey::getEncryptedAesKey).orElse(null),
                 message.getIv(),
                 message.getCreatedAt(),
                 message.getStatus()
@@ -259,7 +304,6 @@ public class MessageService {
             Long receiverId,
             Long deviceId
     ) {
-
         String username =
                 currentUsername.split(":")[0];
 
@@ -276,18 +320,14 @@ public class MessageService {
                         receiver.getId()
                 );
 
-
-
         return messages.stream()
                 .map(message -> {
-
-                    MessageDeviceKey key =
-                            messageDeviceKeyRepository
-                                    .findByMessageIdAndDeviceId(
-                                            message.getId(),
-                                            deviceId
-                                    )
-                                    .orElseThrow();
+                    Optional<MessageDeviceKey> key =
+                            findReadableKeyForCurrentDevice(
+                                    message,
+                                    currentUser,
+                                    deviceId
+                            );
 
                     return new MessageResponseDTO(
                             message.getId(),
@@ -295,7 +335,7 @@ public class MessageService {
                             message.getSender().getUsername(),
                             message.getReceiver().getId(),
                             message.getCiphertext(),
-                            key.getEncryptedAesKey(),
+                            key.map(MessageDeviceKey::getEncryptedAesKey).orElse(null),
                             message.getIv(),
                             message.getCreatedAt(),
                             message.getStatus()
@@ -323,7 +363,6 @@ public class MessageService {
             String currentUsername,
             Long deviceId
     ) {
-
         String username =
                 currentUsername.split(":")[0];
 
@@ -346,29 +385,29 @@ public class MessageService {
                 otherUser = message.getSender();
             }
 
-            MessageDeviceKey key =
-                    messageDeviceKeyRepository
-                            .findByMessageIdAndDeviceId(
-                                    message.getId(),
-                                    deviceId
-                            )
-                            .orElseThrow();
-
-            if (!recentChats.containsKey(otherUser.getId())) {
-
-                recentChats.put(
-                        otherUser.getId(),
-                        new RecentChatDTO(
-                                otherUser.getId(),
-                                otherUser.getUsername(),
-                                otherUser.getEmail(),
-                                message.getCiphertext(),
-                                key.getEncryptedAesKey(),
-                                message.getIv(),
-                                message.getCreatedAt()
-                        )
-                );
+            if (recentChats.containsKey(otherUser.getId())) {
+                continue;
             }
+
+            Optional<MessageDeviceKey> key =
+                    findReadableKeyForCurrentDevice(
+                            message,
+                            currentUser,
+                            deviceId
+                    );
+
+            recentChats.put(
+                    otherUser.getId(),
+                    new RecentChatDTO(
+                            otherUser.getId(),
+                            otherUser.getUsername(),
+                            otherUser.getEmail(),
+                            message.getCiphertext(),
+                            key.map(MessageDeviceKey::getEncryptedAesKey).orElse(null),
+                            message.getIv(),
+                            message.getCreatedAt()
+                    )
+            );
         }
 
         return recentChats.values().stream().toList();

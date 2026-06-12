@@ -6,8 +6,11 @@ import {
     Plus,
     Search,
     MessageSquare,
-    LoaderCircle
+    LoaderCircle,
+    ShieldCheck
 } from 'lucide-react';
+
+import { useNavigate } from 'react-router-dom';
 
 import { useTheme } from '../context/ThemeContext';
 import { apiFetch } from '../services/api';
@@ -21,12 +24,14 @@ export default function Sidebar({
                                     setContacts
                                 }) {
     const { isDark, toggleTheme } = useTheme();
+    const navigate = useNavigate();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [emailInput, setEmailInput] = useState('');
     const [emailError, setEmailError] = useState('');
     const [isChatsLoading, setIsChatsLoading] = useState(true);
     const [isStartingChat, setIsStartingChat] = useState(false);
+
 
     const username =
         localStorage.getItem('username') || 'User';
@@ -232,6 +237,14 @@ export default function Sidebar({
                             title="New Chat"
                         >
                             <Plus size={18} strokeWidth={2.5} />
+                        </button>
+
+                        <button
+                            onClick={() => navigate('/backup')}
+                            className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                            title="Security & Recovery"
+                        >
+                            <ShieldCheck size={18} strokeWidth={2.5} />
                         </button>
 
                         <button

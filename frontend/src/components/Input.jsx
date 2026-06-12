@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { cn } from '../utils/cn';
 
 const Input = forwardRef(({ className, icon: Icon, ...props }, ref) => {
