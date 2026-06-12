@@ -35,4 +35,6 @@ public class Device {
     private Instant lastSeen;
 
     private boolean active;
+
+
 }
