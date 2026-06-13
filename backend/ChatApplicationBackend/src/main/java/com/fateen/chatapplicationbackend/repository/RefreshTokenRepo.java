@@ -3,6 +3,9 @@ package com.fateen.chatapplicationbackend.repository;
 import com.fateen.chatapplicationbackend.models.Device;
 import com.fateen.chatapplicationbackend.models.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,5 +26,17 @@ public interface RefreshTokenRepo extends JpaRepository<RefreshToken,Long> {
     List<RefreshToken> findByFamilyId(String familyId);
 
     List<RefreshToken> findByDevice(Device device);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        update RefreshToken token
+        set token.revoked = true
+        where token.device.user.username = :username
+          and token.revoked = false
+        """)
+    int revokeAllByUsername(
+            @Param("username")
+            String username
+    );
 
 }

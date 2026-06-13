@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Chat from './pages/Chat';
 import Backup from './pages/Backup.jsx';
+import ResetPassword from "./pages/ResetPassword.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 
 const PublicRoute = ({ children }) => {
   const accessToken = localStorage.getItem('accessToken');
@@ -43,6 +45,18 @@ function App() {
                   </ProtectedRoute>
                 }
             />
+
+              <Route
+                  path="/forgot-password"
+                  element={<ForgotPassword />}
+              />
+
+              <Route
+                  path="/reset-password"
+                  element={<ResetPassword />}
+              />
+
+
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

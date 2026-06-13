@@ -69,6 +69,15 @@ public class RefreshTokenService {
         );
     }
 
+    @Transactional
+    public void revokeAllForUsername(
+            String username
+    ) {
+        refreshTokenRepo.revokeAllByUsername(
+                username
+        );
+    }
+
     public RefreshTokenService(
             RefreshTokenRepo refreshTokenRepo, UserActionRepo userRepo
     ) {

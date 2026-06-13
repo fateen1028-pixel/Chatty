@@ -7,11 +7,14 @@ import com.fateen.chatapplicationbackend.repository.UserActionRepo;
 import com.fateen.chatapplicationbackend.security.CookieUtil;
 import com.fateen.chatapplicationbackend.services.AuthService;
 import com.fateen.chatapplicationbackend.services.JwtService;
+import com.fateen.chatapplicationbackend.services.PasswordResetService;
 import com.fateen.chatapplicationbackend.services.RefreshTokenService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,16 +32,18 @@ public class AuthController {
     private final RefreshTokenRepo refreshTokenRepo;
     private final RefreshTokenService refreshTokenService;
     private final CookieUtil cookieUtil;
+    private final PasswordResetService passwordResetService;
 
 
 
-    public AuthController(AuthService authService, JwtService jwtService, UserActionRepo userRepo, RefreshTokenRepo refreshTokenRepo, RefreshTokenService refreshTokenService, CookieUtil cookieUtil) {
+    public AuthController(AuthService authService, JwtService jwtService, UserActionRepo userRepo, RefreshTokenRepo refreshTokenRepo, RefreshTokenService refreshTokenService, CookieUtil cookieUtil, PasswordResetService passwordResetService) {
         this.authService = authService;
         this.jwtService = jwtService;
         this.userRepo = userRepo;
         this.refreshTokenRepo = refreshTokenRepo;
         this.refreshTokenService = refreshTokenService;
         this.cookieUtil = cookieUtil;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/register")
@@ -252,5 +257,44 @@ public class AuthController {
                         clearCookie.toString()
                 )
                 .body("Logged out");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponse> forgotPassword(
+            @Valid
+            @RequestBody
+            ForgotPasswordRequest request
+    ) {
+
+        passwordResetService.requestPasswordReset(
+                request.email()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .body(
+                        new MessageResponse(
+                                "If an account exists for this email, a reset link has been sent."
+                        )
+                );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(
+            @Valid
+            @RequestBody
+            ResetPasswordRequest request
+    ) {
+
+        passwordResetService.resetPassword(
+                request.token(),
+                request.newPassword()
+        );
+
+        return ResponseEntity.ok(
+                new MessageResponse(
+                        "Password reset successfully."
+                )
+        );
     }
 }
