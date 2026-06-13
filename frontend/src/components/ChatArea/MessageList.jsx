@@ -7,7 +7,7 @@ export default function MessageList({ currentMessages, currentUsername, messages
   currentMessages
 );
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 scroll-smooth bg-slate-50/50 dark:bg-[#0B0C0E]/50">
+    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 scroll-smooth bg-transparent scrollbar-custom">
       {currentMessages.map(
         (msg) => {
           const isOwn =
@@ -31,10 +31,10 @@ export default function MessageList({ currentMessages, currentUsername, messages
                 }`}
               >
                 <div
-                  className={`px-4 py-3 shadow-sm transition-all duration-200 ${
+                  className={`px-4 py-3 transition-all duration-300 ${
                     isOwn
-                      ? 'bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl rounded-tr-sm shadow-indigo-500/20'
-                      : 'bg-white dark:bg-[#1A1A1D] text-slate-800 dark:text-slate-200 rounded-2xl rounded-tl-sm border border-slate-200/50 dark:border-slate-800/50 hover:border-slate-300 dark:hover:border-slate-700'
+                      ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-2xl rounded-br-none shadow-md shadow-cyan-500/30'
+                      : 'bg-white dark:bg-[#1A1A1D] text-slate-800 dark:text-slate-200 rounded-2xl rounded-bl-none border border-slate-200/60 dark:border-slate-800/60 shadow-sm hover:shadow-md'
                   }`}
                 >
                   <p className="text-[15px] leading-relaxed break-words">
@@ -62,7 +62,7 @@ export default function MessageList({ currentMessages, currentUsername, messages
 
                   {
                     isOwn && (
-                      <span className="text-[11px] text-indigo-500 dark:text-indigo-400 font-bold tracking-widest flex">
+                      <span className="text-[11px] text-cyan-500 dark:text-cyan-400 font-bold tracking-widest flex">
                         {
                           msg.status === 'SENT'
                             ? <span className="opacity-70">✓</span>

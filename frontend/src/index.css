@@ -1,4 +1,7 @@
-﻿@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --color-primary: #6366f1;
@@ -10,7 +13,8 @@
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-900 dark:selection:text-indigo-100;
+  @apply bg-slate-50 text-slate-900 antialiased selection:bg-cyan-500/30 selection:text-cyan-900 dark:selection:text-cyan-100;
+  font-family: 'Inter', sans-serif;
 }
 
 .dark body {

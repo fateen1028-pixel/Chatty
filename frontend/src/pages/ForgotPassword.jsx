@@ -62,7 +62,7 @@ export default function ForgotPassword() {
         <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-[#0B0C0E]">
             <div className="w-full max-w-md bg-white dark:bg-[#111113] rounded-[2rem] shadow-2xl p-8 sm:p-10 border border-slate-200 dark:border-slate-800">
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <div className="w-16 h-16 bg-cyan-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6">
                         <Mail size={30} />
                     </div>
 
@@ -118,7 +118,7 @@ export default function ForgotPassword() {
                 <div className="mt-6 text-center">
                     <Link
                         to="/login"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-cyan-600 dark:text-cyan-400"
                     >
                         <ArrowLeft size={16} />
                         Back to login

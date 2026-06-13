@@ -13,7 +13,7 @@ export default function MessageInput({
                 onSubmit={handleSend}
                 className="flex items-end space-x-3 max-w-4xl mx-auto"
             >
-                <div className="flex-1 bg-slate-100 dark:bg-[#1A1A1D] border border-transparent dark:border-slate-800/60 rounded-3xl shadow-inner focus-within:ring-2 focus-within:ring-indigo-500/30 focus-within:border-indigo-500/50 transition-all duration-300">
+                <div className="flex-1 bg-slate-100 dark:bg-[#1A1A1D] border border-transparent dark:border-slate-800/60 rounded-3xl shadow-inner focus-within:ring-2 focus-within:ring-cyan-500/30 focus-within:border-cyan-500/50 transition-all duration-300">
                     <input
                         type="text"
                         value={input}
@@ -31,7 +31,7 @@ export default function MessageInput({
                 <button
                     type="submit"
                     disabled={!input.trim() || isSending}
-                    className="p-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:hover:bg-indigo-600 disabled:shadow-none disabled:pointer-events-none hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                    className="p-3.5 bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-full shadow-md shadow-cyan-500/30 hover:shadow-cyan-500/50 disabled:opacity-50 disabled:hover:from-cyan-500 disabled:hover:to-blue-600 disabled:shadow-none disabled:pointer-events-none hover:scale-105 active:scale-95 transition-all duration-300"
                 >
                     {isSending ? (
                         <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />

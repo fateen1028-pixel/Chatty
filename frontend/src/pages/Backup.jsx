@@ -717,7 +717,7 @@ export default function Backup() {
             <div className="max-w-5xl mx-auto py-4 sm:py-8">
                 <button
                     onClick={() => navigate('/chat')}
-                    className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-5 sm:mb-6 transition-colors"
+                    className="flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 mb-5 sm:mb-6 transition-colors"
                 >
                     <ArrowLeft size={18} />
                     Back to chat
@@ -784,7 +784,7 @@ export default function Backup() {
                         title="Device approval"
                         question="Need to approve another device or approve this one?"
                         badge={pendingApprovalCount > 0 ? `${pendingApprovalCount} waiting` : 'Check'}
-                        tone={pendingApprovalCount > 0 ? 'warning' : 'purple'}
+                        tone={pendingApprovalCount > 0 ? 'warning' : 'blue'}
                         isOpen={openMenu === 'approval'}
                         onToggle={() => toggleMenu('approval')}
                     >
@@ -978,7 +978,7 @@ export default function Backup() {
                                 rows={4}
                                 placeholder="Enter your 12-block recovery phrase"
                                 disabled={isSavingBackup}
-                                className="w-full bg-slate-50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none disabled:opacity-60 disabled:cursor-not-allowed placeholder:text-slate-400 font-mono text-sm"
+                                className="w-full bg-slate-50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 resize-none disabled:opacity-60 disabled:cursor-not-allowed placeholder:text-slate-400 font-mono text-sm"
                             />
 
                             {error && <ErrorText>{error}</ErrorText>}
@@ -1108,12 +1108,12 @@ export default function Backup() {
                                         </div>
                                     ) : (
                                         <div className="space-y-5">
-                                            <div className="bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-2xl p-5 text-center">
-                                                <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3">
+                                            <div className="bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20 rounded-2xl p-5 text-center">
+                                                <p className="text-xs font-bold text-cyan-500 uppercase tracking-widest mb-3">
                                                     Match this code on your trusted device
                                                 </p>
 
-                                                <div className="text-3xl sm:text-4xl font-black tracking-[0.18em] sm:tracking-[0.25em] text-indigo-700 dark:text-indigo-300 break-all">
+                                                <div className="text-3xl sm:text-4xl font-black tracking-[0.18em] sm:tracking-[0.25em] text-cyan-700 dark:text-cyan-300 break-all">
                                                     {approvalRequest.verificationCode}
                                                 </div>
                                             </div>
@@ -1180,7 +1180,7 @@ export default function Backup() {
 
                                         <button
                                             onClick={() => loadPendingApprovals()}
-                                            className="text-sm sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline self-start sm:self-auto"
+                                            className="text-sm sm:text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline self-start sm:self-auto"
                                         >
                                             Refresh
                                         </button>
@@ -1227,7 +1227,7 @@ export default function Backup() {
                                                                 Code
                                                             </p>
 
-                                                            <span className="text-2xl font-black tracking-widest text-indigo-600 dark:text-indigo-400">
+                                                            <span className="text-2xl font-black tracking-widest text-cyan-600 dark:text-cyan-400">
                                                                 {request.verificationCode}
                                                             </span>
                                                         </div>
@@ -1287,7 +1287,7 @@ export default function Backup() {
                                 rows={4}
                                 placeholder="Enter your 12-block recovery phrase"
                                 disabled={recoverStatus === 'loading'}
-                                className="w-full bg-slate-50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none disabled:opacity-60 disabled:cursor-not-allowed placeholder:text-slate-400 font-mono text-sm"
+                                className="w-full bg-slate-50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 resize-none disabled:opacity-60 disabled:cursor-not-allowed placeholder:text-slate-400 font-mono text-sm"
                             />
 
                             {error && <ErrorText>{error}</ErrorText>}
@@ -1328,7 +1328,7 @@ function PageHeader() {
     return (
         <div className="mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-3">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-cyan-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/30 flex-shrink-0">
                     <ShieldCheck size={30} />
                 </div>
 
@@ -1482,7 +1482,7 @@ function ProblemMenu({
                 className="w-full p-4 sm:p-5 flex items-center justify-between gap-4 text-left hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors"
             >
                 <div className="flex items-start gap-4 min-w-0">
-                    <div className="w-11 h-11 rounded-2xl bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
+                    <div className="w-11 h-11 rounded-2xl bg-cyan-600/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center flex-shrink-0">
                         <Icon size={23} />
                     </div>
 
@@ -1711,7 +1711,7 @@ function DeviceApprovalContent({
 
                         <button
                             onClick={onRefresh}
-                            className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:underline self-start sm:self-auto"
+                            className="text-sm font-bold text-cyan-600 dark:text-cyan-400 hover:underline self-start sm:self-auto"
                         >
                             Refresh
                         </button>
@@ -1833,7 +1833,7 @@ function StatusPanel({ icon: Icon, title, value, detail }) {
     return (
         <div className="bg-white/70 dark:bg-[#111113]/70 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5">
             <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900 text-cyan-600 dark:text-cyan-400 flex items-center justify-center flex-shrink-0">
                     <Icon size={21} />
                 </div>
 
@@ -1883,7 +1883,7 @@ function Badge({ tone, children }) {
     const tones = {
         success: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20',
         neutral: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
-        purple: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-300 dark:border-purple-500/20',
+        blue: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20',
         warning: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20'
     };
 
@@ -1933,7 +1933,7 @@ function ModeChoice({ icon: Icon, title, text, buttonText, onClick }) {
     return (
         <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
             <div className="flex items-start gap-3 mb-4">
-                <div className="w-11 h-11 rounded-xl bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-cyan-600/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center flex-shrink-0">
                     <Icon size={22} />
                 </div>
 
@@ -1965,7 +1965,7 @@ function StepBox({ steps }) {
             <div className="space-y-3">
                 {steps.map((step, index) => (
                     <div key={step} className="flex items-start gap-3">
-                        <div className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-cyan-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
                             {index + 1}
                         </div>
 

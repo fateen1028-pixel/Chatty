@@ -73,12 +73,12 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-[#0B0C0E] transition-colors relative overflow-hidden">
       {/* Decorative blurred background shapes */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-500/20 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-500/20 dark:bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="w-full max-w-md bg-white/80 dark:bg-[#111113]/80 rounded-[2rem] shadow-2xl p-8 sm:p-10 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/80 z-10">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-500/30 transform -rotate-3">
+          <div className="w-16 h-16 bg-cyan-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-cyan-500/30 transform -rotate-3">
              <span className="text-3xl font-bold transform rotate-3">C</span>
           </div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-2 tracking-tight">Welcome Back</h1>
@@ -123,12 +123,12 @@ export default function Login() {
 
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center space-x-2 cursor-pointer">
-              <input type="checkbox" className="rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 bg-slate-50 dark:bg-slate-700 dark:border-slate-600" />
+              <input type="checkbox" className="rounded text-cyan-600 focus:ring-cyan-500 border-slate-300 bg-slate-50 dark:bg-slate-700 dark:border-slate-600" />
               <span className="text-slate-600 dark:text-slate-300">Remember me</span>
             </label>
               <Link
                   to="/forgot-password"
-                  className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  className="font-medium text-cyan-600 hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300"
               >
                   Forgot password?
               </Link>
@@ -152,7 +152,7 @@ export default function Login() {
 
         <div className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
           Don't have an account?{' '}
-          <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+          <Link to="/register" className="font-medium text-cyan-600 hover:text-cyan-500 dark:text-cyan-400 dark:hover:text-cyan-300">
             Sign up
           </Link>
         </div>
