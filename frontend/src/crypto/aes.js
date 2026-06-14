@@ -60,8 +60,8 @@ export async function decryptMessageAES(
       base64ToArrayBuffer(ciphertext)
     );
 
-    console.log("ciphertext =", JSON.stringify(ciphertext));
-    console.log("iv =", JSON.stringify(iv));
+    // console.log("ciphertext =", JSON.stringify(ciphertext));
+    // console.log("iv =", JSON.stringify(iv));
 
   return new TextDecoder()
     .decode(decrypted);

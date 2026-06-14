@@ -8,16 +8,16 @@ export async function apiFetch(
     let accessToken =
         localStorage.getItem("accessToken");
 
-    console.log("TOKEN:", accessToken);
+    // console.log("TOKEN:", accessToken);
 
-    console.log("URL:", `${BASE_URL}${endpoint}`);
+    // console.log("URL:", `${BASE_URL}${endpoint}`);
 
-    console.log("ACCESS TOKEN =", accessToken);
+    // console.log("ACCESS TOKEN =", accessToken);
 
-    console.log("HEADERS = ", {
+    /* console.log("HEADERS = ", {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`
-    });
+    }); */
 
     let response = await fetch(
         `${BASE_URL}${endpoint}`,

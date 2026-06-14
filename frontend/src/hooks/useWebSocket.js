@@ -117,7 +117,7 @@ export function useWebSocket(
           heartbeatOutgoing: 4000,
 
           debug: (str) => {
-            console.log('[STOMP]', str);
+            // console.log('[STOMP]', str);
           },
 
           /*
@@ -128,7 +128,7 @@ export function useWebSocket(
 
           onConnect: () => {
 
-            console.log('✅ WebSocket Connected');
+            // console.log('✅ WebSocket Connected');
 
             /*
             ============================
@@ -143,7 +143,7 @@ export function useWebSocket(
                 const msg =
                   JSON.parse(message.body);
 
-                  console.log("RAW", msg);
+                  // console.log("RAW", msg);
 
                   const isSentByMe =
   msg.senderUsername === currentUsername;
@@ -186,10 +186,10 @@ export function useWebSocket(
                     ? msg.receiverId
                     : msg.senderId;
 
-                    console.log(
+                    /* console.log(
   "STORING MESSAGE",
   JSON.stringify(msg, null, 2)
-);
+); */
 
                 setMessagesMap(prev => {
 
@@ -408,9 +408,9 @@ export function useWebSocket(
 
           onWebSocketClose: () => {
 
-            console.log(
+            /* console.log(
               '⚠️ WebSocket Closed'
-            );
+            ); */
           },
 
           /*
@@ -456,9 +456,9 @@ export function useWebSocket(
 
       if (stompClientRef.current) {
 
-        console.log(
+        /* console.log(
           '🛑 Disconnecting WebSocket'
-        );
+        ); */
 
         stompClientRef.current.deactivate();
       }

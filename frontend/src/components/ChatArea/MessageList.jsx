@@ -2,10 +2,10 @@
 
 export default function MessageList({ currentMessages, currentUsername, messagesEndRef }) {
 
-  console.log(
+  /* console.log(
   "RENDERING",
   currentMessages
-);
+); */
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 scroll-smooth bg-transparent scrollbar-custom">
       {currentMessages.map(
