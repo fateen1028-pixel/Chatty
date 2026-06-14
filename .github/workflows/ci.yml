@@ -50,6 +50,7 @@ jobs:
       SPRING_JPA_SHOW_SQL: "false"
       SPRING_JPA_OPEN_IN_VIEW: "false"
 
+      JWT_SECRET: "ci-test-secret-key-that-is-at-least-32-bytes-long"
       RESEND_API_KEY: test-api-key
       APP_FRONTEND_URL: http://localhost:5173
       APP_MAIL_FROM: test@example.com

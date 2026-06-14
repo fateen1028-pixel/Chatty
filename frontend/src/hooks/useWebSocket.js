@@ -16,7 +16,7 @@ export function useWebSocket(
 
   useEffect(() => {
 
-    let isMounted = true;
+
 
     const connectWebSocket = async () => {
 
@@ -452,7 +452,7 @@ export function useWebSocket(
 
     return () => {
 
-      isMounted = false;
+
 
       if (stompClientRef.current) {
 

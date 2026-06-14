@@ -333,10 +333,6 @@ export default function Backup() {
     };
 
     const loadInitialSecurityState = async () => {
-        setIsStatusLoading(true);
-        setDeviceAccessStatus('checking');
-        setDeviceAccessDetail('Checking this device...');
-
         try {
             const status = await getRecoveryBackupStatus();
             const enabled = Boolean(status.enabled);
@@ -424,7 +420,9 @@ export default function Backup() {
     };
 
     useEffect(() => {
-        loadInitialSecurityState();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void loadInitialSecurityState();
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [username]);
 

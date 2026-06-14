@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export default function ChatHeader({ chat, onBack, isOnline, isTyping }) {
   return (
@@ -30,12 +30,12 @@ export default function ChatHeader({ chat, onBack, isOnline, isTyping }) {
           <p className="text-xs font-medium mt-0.5 mb-0 flex items-center gap-1.5 transition-colors duration-200">
             {
               isTyping ? (
-                <span className="text-cyan-500 flex items-center gap-1">
+                <span className="text-indigo-500 flex items-center gap-1">
                   Typing
                   <span className="flex space-x-0.5">
-                    <span className="w-1 h-1 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-1 h-1 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-1 h-1 bg-cyan-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    <span className="w-1 h-1 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1 h-1 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1 h-1 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                   </span>
                 </span>
               ) : isOnline ? (

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { MessageSquare, Zap, Shield, Moon, CheckCircle2 } from 'lucide-react';
 

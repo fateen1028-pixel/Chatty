@@ -14,7 +14,7 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import { encryptChatMessageForDevices } from '../crypto/e2ee';
 import {apiFetch} from "../services/api.js";
 
-const API_URL = import.meta.env.VITE_API_URL;
+
 
 export default function ChatArea({
   chat,

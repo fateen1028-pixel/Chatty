@@ -45,7 +45,7 @@ export default function Login() {
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.message || errorMessage;
-                } catch (parseError) {
+                } catch {
                     errorMessage = `Server Error: ${response.statusText || response.status}`;
                 }
 
