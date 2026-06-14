@@ -1,7 +1,7 @@
 package com.fateen.chatapplicationbackend.config;
 
 
-import com.fateen.chatapplicationbackend.security.JwtFilter;
+import com.fateen.chatapplicationbackend.auth.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,7 +1,7 @@
 package com.fateen.chatapplicationbackend.config;
 
 
-import com.fateen.chatapplicationbackend.security.WebSocketAuthInterceptor;
+import com.fateen.chatapplicationbackend.chat.security.WebSocketAuthInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
