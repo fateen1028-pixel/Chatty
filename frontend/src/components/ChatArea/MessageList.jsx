@@ -31,7 +31,7 @@ export default function MessageList({ currentMessages, currentUsername, messages
                 }`}
               >
                 <div
-                  className={`px-4 py-3 transition-all duration-300 ${
+                  className={`px-4 py-3 transition-shadow duration-300 transform-gpu will-change-transform ${
                     isOwn
                       ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white rounded-2xl rounded-br-none shadow-md shadow-cyan-500/30'
                       : 'bg-white dark:bg-[#1A1A1D] text-slate-800 dark:text-slate-200 rounded-2xl rounded-bl-none border border-slate-200/60 dark:border-slate-800/60 shadow-sm hover:shadow-md'

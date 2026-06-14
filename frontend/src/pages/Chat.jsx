@@ -50,17 +50,17 @@ export default function Chat() {
   }
 
   return (
-      <div className="flex h-screen bg-slate-50 dark:bg-[#0B0C0E] overflow-hidden selection:bg-cyan-500/30 relative">
+      <div className="flex h-[100dvh] bg-slate-50 dark:bg-[#0B0C0E] overflow-hidden selection:bg-cyan-500/30 relative">
         
         {/* Ambient Background Glows */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
            {/* Dark Mode Glows */}
-           <div className="hidden dark:block absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-cyan-500/10 blur-[120px] rounded-full"></div>
-           <div className="hidden dark:block absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full"></div>
+           <div className="hidden dark:block absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-cyan-500/10 blur-[120px] rounded-full transform-gpu will-change-transform"></div>
+           <div className="hidden dark:block absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full transform-gpu will-change-transform"></div>
            
            {/* Light Mode Glows */}
-           <div className="dark:hidden absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-cyan-400/20 blur-[100px] rounded-full mix-blend-multiply"></div>
-           <div className="dark:hidden absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-400/20 blur-[100px] rounded-full mix-blend-multiply"></div>
+           <div className="dark:hidden absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-cyan-400/20 blur-[100px] rounded-full mix-blend-multiply transform-gpu will-change-transform"></div>
+           <div className="dark:hidden absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-400/20 blur-[100px] rounded-full mix-blend-multiply transform-gpu will-change-transform"></div>
         </div>
 
         <div
