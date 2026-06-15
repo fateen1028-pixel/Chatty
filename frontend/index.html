@@ -8,7 +8,6 @@
       content="width=device-width, initial-scale=1.0"
     />
 
-    <!-- Basic SEO -->
     <title>Chatty — Secure Real-Time Messaging</title>
 
     <meta
@@ -16,61 +15,81 @@
       content="Chatty is a secure real-time messaging application built by Mohamed Fateen, featuring instant messaging and end-to-end encryption."
     />
 
-    <meta
-      name="keywords"
-      content="Chatty, real-time chat, secure messaging, encrypted chat, Mohamed Fateen"
-    />
-
     <meta name="author" content="Mohamed Fateen" />
     <meta name="robots" content="index, follow" />
 
-    <!-- Canonical URL -->
     <link rel="canonical" href="https://chat.fateen.dev/" />
+
+    <!-- Google site-name structured data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Chatty",
+        "alternateName": [
+          "Chatty Messaging",
+          "chat.fateen.dev"
+        ],
+        "url": "https://chat.fateen.dev/"
+      }
+    </script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon1.png" />
     <link rel="apple-touch-icon" href="/favicon1.png" />
 
-    <!-- Browser theme -->
     <meta name="theme-color" content="#111827" />
 
-    <!-- Open Graph: WhatsApp, LinkedIn, Facebook -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://chat.fateen.dev/" />
+    <meta property="og:site_name" content="Chatty" />
+
     <meta
       property="og:title"
       content="Chatty — Secure Real-Time Messaging"
     />
+
     <meta
       property="og:description"
       content="A secure real-time messaging application with instant communication and end-to-end encryption."
     />
+
     <meta
       property="og:image"
       content="https://chat.fateen.dev/chatty-preview.png"
     />
-    <meta property="og:site_name" content="Chatty" />
 
-    <!-- Twitter/X preview -->
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Chatty secure messaging application" />
+
+    <!-- Twitter/X -->
     <meta name="twitter:card" content="summary_large_image" />
+
     <meta
       name="twitter:title"
       content="Chatty — Secure Real-Time Messaging"
     />
+
     <meta
       name="twitter:description"
       content="A secure real-time messaging application built by Mohamed Fateen."
     />
+
     <meta
       name="twitter:image"
       content="https://chat.fateen.dev/chatty-preview.png"
     />
+
+    <meta
+      name="twitter:image:alt"
+      content="Chatty secure messaging application"
+    />
   </head>
 
   <body>
-    <noscript>
-      JavaScript is required to use Chatty.
-    </noscript>
+    <noscript>JavaScript is required to use Chatty.</noscript>
 
     <div id="root"></div>
 
