@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing';
@@ -8,6 +8,7 @@ import Chat from './pages/Chat';
 import Backup from './pages/Backup.jsx';
 import ResetPassword from "./pages/ResetPassword.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ProfileSettings from "./pages/ProfileSettings.jsx";
 
 const PublicRoute = ({ children }) => {
   const accessToken = localStorage.getItem('accessToken');
@@ -42,6 +43,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Backup />
+                  </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfileSettings />
                   </ProtectedRoute>
                 }
             />

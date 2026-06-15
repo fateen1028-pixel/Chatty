@@ -8,7 +8,8 @@ import {
     MessageSquare,
     LoaderCircle,
     ShieldCheck,
-    MoreVertical
+    MoreVertical,
+    User
 } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
@@ -263,6 +264,14 @@ export default function Sidebar({
                                     <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
                                     <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 dark:bg-[#1A1A1D]/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-xl shadow-xl z-50 overflow-hidden origin-top-right transition-all">
                                         <div className="py-1">
+                                            <button
+                                                onClick={() => { navigate('/profile'); setIsMenuOpen(false); }}
+                                                className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                            >
+                                                <User size={15} className="text-cyan-600 dark:text-cyan-400" />
+                                                Profile Settings
+                                            </button>
+                                            <div className="h-px bg-slate-200/50 dark:bg-slate-800/50 my-1" />
                                             <button
                                                 onClick={() => { navigate('/backup'); setIsMenuOpen(false); }}
                                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
