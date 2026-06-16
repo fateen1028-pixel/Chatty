@@ -2,97 +2,68 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary SEO Metadata -->
     <title>Chatty — Secure Real-Time Messaging</title>
-
-    <meta
-      name="description"
-      content="Chatty is a secure real-time messaging application built by Mohamed Fateen, featuring instant messaging and end-to-end encryption."
-    />
-
+    <meta name="description" content="Chatty is an end-to-end encrypted, real-time messaging application built by Mohamed Fateen for instant, secure communication." />
     <meta name="author" content="Mohamed Fateen" />
     <meta name="robots" content="index, follow" />
-
     <link rel="canonical" href="https://chat.fateen.dev/" />
 
-    <!-- Google site-name structured data -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Chatty",
-        "alternateName": [
-          "Chatty Messaging",
-          "chat.fateen.dev"
-        ],
-        "url": "https://chat.fateen.dev/"
-      }
-    </script>
+    <!-- PWA / iOS standalone capabilities (Removes clunky browser UI on iOS) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Chatty" />
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon1.png" />
-    <link rel="apple-touch-icon" href="/favicon1.png" />
+    <!-- Adaptive Theme Colors (Preventing flash bang on theme switch) -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)" />
 
-    <meta name="theme-color" content="#111827" />
+    <!-- Asset Paths & Favicons -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
 
-    <!-- Open Graph -->
+    <!-- Unified Social Graphics Metadata (Handles Facebook, LinkedIn, Discord, and Twitter/X) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://chat.fateen.dev/" />
     <meta property="og:site_name" content="Chatty" />
-
-    <meta
-      property="og:title"
-      content="Chatty — Secure Real-Time Messaging"
-    />
-
-    <meta
-      property="og:description"
-      content="A secure real-time messaging application with instant communication and end-to-end encryption."
-    />
-
-    <meta
-      property="og:image"
-      content="https://chat.fateen.dev/chatty-preview.png"
-    />
-
+    <meta property="og:title" content="Chatty — Secure Real-Time Messaging" />
+    <meta property="og:description" content="An end-to-end encrypted real-time messaging platform built by Mohamed Fateen." />
+    <meta property="og:image" content="https://chat.fateen.dev/chatty-preview.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Chatty secure messaging application" />
-
-    <!-- Twitter/X -->
+    <meta property="og:image:alt" content="Chatty user interface showing secure chat rooms" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <meta
-      name="twitter:title"
-      content="Chatty — Secure Real-Time Messaging"
-    />
-
-    <meta
-      name="twitter:description"
-      content="A secure real-time messaging application built by Mohamed Fateen."
-    />
-
-    <meta
-      name="twitter:image"
-      content="https://chat.fateen.dev/chatty-preview.png"
-    />
-
-    <meta
-      name="twitter:image:alt"
-      content="Chatty secure messaging application"
-    />
+    <!-- Upgraded Structured Data (Fixes search engine intent from generic chat to application) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Chatty",
+        "alternateName": ["Chatty Messaging", "chat.fateen.dev"],
+        "url": "https://chat.fateen.dev/",
+        "applicationCategory": "CommunicationApplication",
+        "operatingSystem": "All",
+        "author": {
+          "@type": "Person",
+          "name": "Mohamed Fateen"
+        },
+        "description": "A secure real-time messaging application featuring instant communication and end-to-end encryption."
+      }
+    </script>
   </head>
-
   <body>
-    <noscript>JavaScript is required to use Chatty.</noscript>
-
+    <!-- Fallback for text-only crawlers or users with JS blocked -->
+    <noscript>You need to enable JavaScript to run Chatty.</noscript>
+    
+    <!-- Application Entry Target -->
     <div id="root"></div>
-
+    
+    <!-- Entry Script Bundle -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
