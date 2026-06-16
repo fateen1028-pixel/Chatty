@@ -30,7 +30,7 @@ public class CookieUtil {
                         ""
                 )
                 .httpOnly(true)
-                .secure(true)
+                .secure(true) //true for prod
                 .path("/")
                 .maxAge(0)
                 .domain("fateen.dev")

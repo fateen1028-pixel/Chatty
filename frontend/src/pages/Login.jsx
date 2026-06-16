@@ -24,29 +24,47 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            const device = await prepareDeviceForLogin(username);
+            const loginUsername = username.trim();
 
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: "include",
-                body: JSON.stringify({
-                    username,
-                    password,
-                    deviceName: device.deviceName,
-                    deviceFingerprint: device.deviceFingerprint,
-                    publicKey: device.publicKey
-                })
-            });
+            const device =
+                await prepareDeviceForLogin(loginUsername);
+
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/auth/login`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username: loginUsername,
+                        password,
+                        deviceName: device.deviceName,
+                        deviceFingerprint:
+                        device.deviceFingerprint,
+                        publicKey: device.publicKey
+                    })
+                }
+            );
 
             if (!response.ok) {
                 let errorMessage = 'Login failed';
 
                 try {
                     const errorData = await response.json();
-                    errorMessage = errorData.message || errorMessage;
+
+                    errorMessage =
+                        errorData.message ||
+                        errorData.detail ||
+                        errorData.error ||
+                        errorMessage;
                 } catch {
-                    errorMessage = `Server Error: ${response.statusText || response.status}`;
+                    errorMessage =
+                        `Server Error: ${
+                            response.statusText ||
+                            response.status
+                        }`;
                 }
 
                 throw new Error(errorMessage);
@@ -55,16 +73,26 @@ export default function Login() {
             const data = await response.json();
 
             if (!data.accessToken) {
-                throw new Error("Invalid server response structure");
+                throw new Error(
+                    'Invalid server response structure'
+                );
             }
 
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('username', username);
+            localStorage.setItem(
+                'accessToken',
+                data.accessToken
+            );
+
+            localStorage.setItem(
+                'username',
+                loginUsername
+            );
 
             navigate('/chat');
 
-        } catch (err) {
-            setError(err.message);
+        } catch (error) {
+            console.error('Login error:', error);
+            setError(error.message);
         } finally {
             setIsLoading(false);
         }

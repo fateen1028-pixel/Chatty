@@ -34,17 +34,24 @@ function getDeviceName() {
 }
 
 export async function prepareDeviceForLogin(username) {
+    const storageUsername =
+        username.trim();
+
     const deviceFingerprint =
-        getOrCreateDeviceFingerprint(username);
+        getOrCreateDeviceFingerprint(
+            storageUsername
+        );
 
     const publicKeyStorageKey =
-        `publicKey-${username}`;
+        `publicKey-${storageUsername}`;
 
     const existingPrivateKey =
-        await getPrivateKey(username);
+        await getPrivateKey(storageUsername);
 
     const existingPublicKey =
-        localStorage.getItem(publicKeyStorageKey);
+        localStorage.getItem(
+            publicKeyStorageKey
+        );
 
     if (existingPrivateKey && existingPublicKey) {
         return {
@@ -54,20 +61,28 @@ export async function prepareDeviceForLogin(username) {
         };
     }
 
+    if (existingPrivateKey || existingPublicKey) {
+        throw new Error(
+            'Encryption key storage is incomplete.'
+        );
+    }
+
     const keyPair =
         await generateRSAKeys();
 
     const exportedPublicKey =
         await crypto.subtle.exportKey(
-            "spki",
+            'spki',
             keyPair.publicKey
         );
 
     const publicKeyBase64 =
-        arrayBufferToBase64(exportedPublicKey);
+        arrayBufferToBase64(
+            exportedPublicKey
+        );
 
     await savePrivateKey(
-        username,
+        storageUsername,
         keyPair.privateKey
     );
 

@@ -133,9 +133,31 @@ export default function Sidebar({
         };
     }, [setContacts]);
 
-    const handleLogout = () => {
-        localStorage.clear();
-        window.location.href = '/login';
+    const handleLogout = async () => {
+        try {
+            await fetch(
+                `${import.meta.env.VITE_API_URL}/auth/logout`,
+                {
+                    method: 'POST',
+                    credentials: 'include'
+                }
+            );
+        } catch (error) {
+            console.error('Backend logout failed:', error);
+        } finally {
+            /*
+             * Remove authentication state only.
+             *
+             * Do not delete:
+             * - publicKey-${username}
+             * - deviceFingerprint-${username}
+             * - IndexedDB private key
+             */
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('username');
+
+            window.location.href = '/login';
+        }
     };
 
     const handleNewChat = async (e) => {

@@ -12,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -58,89 +59,113 @@ public class AuthService {
         return new RegisterResponse("User Registered");
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
-
-        String familyId =
-                UUID.randomUUID().toString();
 
         User user = authRepo.findByUsername(request.getUsername())
                 .orElseThrow(() ->
-                        new RuntimeException("Invalid credentials"));
+                        new BadCredentialsException("Invalid credentials")
+                );
 
-
-
-
-        boolean valid = passwordEncoder.matches(
+        boolean validPassword = passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword()
         );
 
-        if (!valid) {
+        if (!validPassword) {
             throw new BadCredentialsException("Invalid credentials");
         }
 
-        Optional<Device> existing =
+        if (
+                request.getDeviceFingerprint() == null
+                        || request.getDeviceFingerprint().isBlank()
+        ) {
+            throw new IllegalArgumentException(
+                    "Device fingerprint is required"
+            );
+        }
+
+        if (
+                request.getPublicKey() == null
+                        || request.getPublicKey().isBlank()
+        ) {
+            throw new IllegalArgumentException(
+                    "Device public key is required"
+            );
+        }
+
+        Optional<Device> existingDevice =
                 deviceRepository.findByDeviceFingerprint(
                         request.getDeviceFingerprint()
                 );
 
         Device device;
 
-        if (existing.isPresent()) {
+        if (existingDevice.isPresent()) {
 
-            device = existing.get();
+            device = existingDevice.get();
 
-            if (
-                    !device.getUser()
-                            .getId()
-                            .equals(user.getId())
-            ) {
-                throw new RuntimeException(
+            if (!device.getUser().getId().equals(user.getId())) {
+                throw new IllegalStateException(
                         "Device fingerprint belongs to another user"
                 );
             }
 
-            device.setLastSeen(Instant.now());
+            String storedPublicKey =
+                    device.getPublicKey();
 
-            device.setPublicKey(
-                    request.getPublicKey()
-            );
+            String receivedPublicKey =
+                    request.getPublicKey();
 
-            deviceRepository.save(device);
-        }else {
+            /*
+             * Do not overwrite the existing public key.
+             * But do not block authentication either.
+             */
+            if (
+                    storedPublicKey != null
+                            && !storedPublicKey.equals(receivedPublicKey)
+            ) {
+                System.err.println(
+                        "WARNING: Encryption-key mismatch for device "
+                                + device.getId()
+                );
+            }
 
-            device = new Device();
-
-            device.setUser(user);
+            if (storedPublicKey == null) {
+                device.setPublicKey(receivedPublicKey);
+            }
 
             device.setDeviceName(
                     request.getDeviceName()
-            );
-
-            device.setPublicKey(
-                    request.getPublicKey()
-            );
-
-            device.setDeviceFingerprint(
-                    request.getDeviceFingerprint()
-            );
-
-            device.setCreatedAt(
-                    Instant.now()
             );
 
             device.setLastSeen(
                     Instant.now()
             );
 
-            device.setDeviceName(
-                    request.getDeviceName()
-            );
-
             device.setActive(true);
 
-            deviceRepository.save(device);
+        } else {
+
+            device = new Device();
+
+            device.setUser(user);
+            device.setDeviceName(request.getDeviceName());
+            device.setPublicKey(request.getPublicKey());
+
+            device.setDeviceFingerprint(
+                    request.getDeviceFingerprint()
+            );
+
+            device.setCreatedAt(Instant.now());
+            device.setLastSeen(Instant.now());
+            device.setActive(true);
         }
+
+        deviceRepository.save(device);
+
+        String familyId =
+                UUID.randomUUID().toString();
 
         String accessToken =
                 jwtService.generateAccessToken(
@@ -155,12 +180,15 @@ public class AuthService {
                 );
 
         refreshTokenService.createRefreshToken(
-                request.getUsername(),
+                user.getUsername(),
                 refreshToken,
                 familyId,
                 device
         );
 
-        return new AuthResponse(accessToken,refreshToken);
+        return new AuthResponse(
+                accessToken,
+                refreshToken
+        );
     }
 }
