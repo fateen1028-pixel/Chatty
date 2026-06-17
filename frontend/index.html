@@ -40,21 +40,41 @@
 
     <!-- Upgraded Structured Data (Fixes search engine intent from generic chat to application) -->
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Chatty",
-        "alternateName": ["Chatty Messaging", "chat.fateen.dev"],
-        "url": "https://chat.fateen.dev/",
-        "applicationCategory": "CommunicationApplication",
-        "operatingSystem": "All",
-        "author": {
-          "@type": "Person",
-          "name": "Mohamed Fateen"
-        },
-        "description": "A secure real-time messaging application featuring instant communication and end-to-end encryption."
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://chat.fateen.dev/#website",
+      "url": "https://chat.fateen.dev/",
+      "name": "Chatty",
+      "alternateName": [
+        "Chatty Messaging",
+        "chat.fateen.dev"
+      ],
+      "description": "A secure end-to-end encrypted real-time messaging application."
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://chat.fateen.dev/#application",
+      "name": "Chatty",
+      "url": "https://chat.fateen.dev/",
+      "applicationCategory": "CommunicationApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires a modern web browser with JavaScript enabled.",
+      "description": "A secure real-time messaging application featuring instant communication and end-to-end encryption.",
+      "author": {
+        "@type": "Person",
+        "name": "Mohamed Fateen",
+        "url": "https://fateen.dev/"
+      },
+      "isPartOf": {
+        "@id": "https://chat.fateen.dev/#website"
       }
-    </script>
+    }
+  ]
+}
+</script>
   </head>
   <body>
     <!-- Fallback for text-only crawlers or users with JS blocked -->

@@ -11,10 +11,20 @@ const Landing = () => {
 
       {/* Header */}
       <header className="container mx-auto px-6 py-6 flex justify-between items-center relative z-10">
-        <div className="flex items-center gap-2 text-2xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
-          <MessageSquare className="text-cyan-500" />
-          <span>Chatty</span>
-        </div>
+        <Link
+  to="/"
+  aria-label="Chatty home"
+  className="flex items-center gap-2 text-2xl font-bold"
+>
+  <MessageSquare
+    className="text-cyan-500"
+    aria-hidden="true"
+  />
+
+  <span className="bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
+    Chatty
+  </span>
+</Link>
         <nav className="hidden md:flex gap-8 text-sm font-medium text-slate-600 dark:text-slate-400">
           <a href="#features" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">Features</a>
           <a href="#about" className="hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">About</a>
