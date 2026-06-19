@@ -222,12 +222,12 @@ function FeatureRow({
             data-reveal
             className="grid gap-6 py-10 md:grid-cols-[80px_1fr_1.3fr] md:gap-10 md:py-14"
         >
-      <span className="font-mono text-sm text-slate-400 dark:text-slate-600">
+      <span className="font-mono text-sm text-slate-600">
         {number}
       </span>
 
             <div className="flex items-start gap-4">
-                <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-slate-200 bg-slate-50 text-cyan-600 dark:border-white/[0.08] dark:bg-white/[0.025] dark:text-cyan-400">
+                <div className="grid size-11 shrink-0 place-items-center rounded-xl border border-white/[0.08] bg-white/[0.025] text-cyan-400">
                     <Icon size={20} />
                 </div>
 
@@ -237,11 +237,11 @@ function FeatureRow({
             </div>
 
             <div>
-                <p className="text-[15px] leading-7 text-slate-600 dark:text-slate-400">
+                <p className="text-[15px] leading-7 text-slate-400">
                     {description}
                 </p>
 
-                <p className="mt-4 text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-600">
+                <p className="mt-4 text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-600">
                     {detail}
                 </p>
             </div>
@@ -1155,31 +1155,40 @@ const Landing = () => {
     return (
         <div
             ref={rootRef}
-            className="min-h-screen overflow-x-clip bg-white font-sans text-slate-900 selection:bg-cyan-500/30 dark:bg-[#080A0C] dark:text-slate-100"
+            className="min-h-screen overflow-x-clip bg-[#080A0C] font-sans text-slate-100 selection:bg-cyan-500/30"
         >
             {/* Header */}
-            <header className="sticky top-0 z-50 h-16 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl dark:border-white/[0.06] dark:bg-[#080A0C]/90">
+            <header className="sticky top-0 z-50 h-16 border-b border-white/[0.07] bg-[#080A0C]/95 text-white shadow-[0_1px_0_rgba(255,255,255,0.02)] backdrop-blur-xl">
                 <div className="mx-auto flex h-full max-w-[1240px] items-center justify-between px-4 sm:px-6">
                     <Link
                         to="/"
                         aria-label="Chatty home"
-                        className="flex items-center gap-2 text-lg font-bold tracking-tight"
+                        className="flex items-center gap-2 text-lg font-bold tracking-tight text-white"
                     >
-                        <MessageSquare className="size-5 text-cyan-500" />
+                        <MessageSquare className="size-5 text-cyan-400" />
                         <span>Chatty</span>
                     </Link>
 
-                    <nav className="hidden items-center gap-8 text-sm font-medium text-slate-500 md:flex dark:text-slate-400">
+                    <nav className="hidden items-center gap-8 text-sm font-medium text-slate-400 md:flex">
                         <a
                             href="#journey"
-                            className="transition-colors hover:text-slate-950 dark:hover:text-white"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                document
+                                    .getElementById("journey")
+                                    ?.scrollIntoView({
+                                        behavior: "smooth",
+                                        block: "start",
+                                    });
+                            }}
+                            className="transition-colors hover:text-white"
                         >
                             Message journey
                         </a>
 
                         <a
                             href="#features"
-                            className="transition-colors hover:text-slate-950 dark:hover:text-white"
+                            className="transition-colors hover:text-white"
                         >
                             Features
                         </a>
@@ -1188,36 +1197,43 @@ const Landing = () => {
                             href="https://github.com/fateen1028-pixel/Chatty"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 transition-colors hover:text-slate-950 dark:hover:text-white"
+                            className="flex items-center gap-1.5 transition-colors hover:text-white"
                         >
                             <ExternalLink size={14} />
                             GitHub
                         </a>
                     </nav>
 
-                    <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-1.5 sm:gap-3">
                         <Link
                             to="/login"
-                            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 outline-none transition-colors hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-cyan-500 dark:text-slate-300 dark:hover:text-white"
+                            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 outline-none transition-colors hover:bg-white/[0.05] hover:text-white focus-visible:ring-2 focus-visible:ring-cyan-400"
                         >
                             Log in
                         </Link>
 
                         <Link
                             to="/register"
-                            className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white outline-none transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:ring-cyan-500 dark:bg-white dark:text-slate-950"
+                            className="rounded-lg bg-white px-3.5 py-2 text-sm font-semibold text-[#080A0C] outline-none transition-transform hover:scale-[1.02] hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-cyan-400 sm:px-4"
                         >
-              <span className="hidden sm:inline">
-                Create account
-              </span>
+        <span className="hidden sm:inline">
+          Create account
+        </span>
 
                             <span className="sm:hidden">
-                Sign up
-              </span>
+          Sign up
+        </span>
                         </Link>
                     </div>
                 </div>
             </header>
+
+            {/* Shared navigation target for both mobile and desktop */}
+            <div
+                id="journey"
+                className="scroll-mt-16"
+                aria-hidden="true"
+            />
 
             {/* Static mobile landing — intentionally no GSAP or pinned scrolling */}
             <section className="bg-[#030708] text-white md:hidden">
@@ -1355,7 +1371,6 @@ const Landing = () => {
 
             {/* Scroll-driven story — desktop/tablet only */}
             <section
-                id="journey"
                 ref={storyRef}
                 className="
     hidden
@@ -1963,7 +1978,7 @@ max-md:top-[26%]
             {/* Features */}
             <section
                 id="features"
-                className="border-t border-slate-200/80 bg-white py-16 dark:border-white/[0.06] dark:bg-[#080A0C] md:py-32"
+                className="border-t border-white/[0.06] bg-[#080A0C] py-16 md:py-32"
             >
                 <div className="mx-auto max-w-[1180px] px-4 sm:px-6">
                     <div
@@ -1971,7 +1986,7 @@ max-md:top-[26%]
                         className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20"
                     >
                         <div>
-                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-400">
                                 Product capabilities
                             </p>
 
@@ -1980,14 +1995,14 @@ max-md:top-[26%]
                             </h2>
                         </div>
 
-                        <p className="max-w-xl self-end text-base leading-8 text-slate-600 dark:text-slate-400">
+                        <p className="max-w-xl self-end text-base leading-8 text-slate-400">
                             Chatty coordinates cryptography,
                             authentication, WebSocket state and message
                             persistence as one working system.
                         </p>
                     </div>
 
-                    <div className="mt-20 divide-y divide-slate-200/80 border-y border-slate-200/80 dark:divide-white/[0.07] dark:border-white/[0.07]">
+                    <div className="mt-20 divide-y divide-white/[0.07] border-y border-white/[0.07]">
                         <FeatureRow
                             number="01"
                             icon={LockKeyhole}
@@ -2016,11 +2031,11 @@ max-md:top-[26%]
             </section>
 
             {/* Device security */}
-            <section className="overflow-hidden border-t border-slate-200/80 bg-slate-50 py-16 dark:border-white/[0.06] dark:bg-[#0B0D10] md:py-32">
+            <section className="overflow-hidden border-t border-white/[0.06] bg-[#0B0D10] py-16 md:py-32">
                 <div className="mx-auto max-w-[1180px] px-4 sm:px-6">
                     <div className="grid items-center gap-16 lg:grid-cols-2">
                         <div data-reveal>
-                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-400">
                                 Device-aware security
                             </p>
 
@@ -2028,7 +2043,7 @@ max-md:top-[26%]
                                 Every device has its own cryptographic identity.
                             </h2>
 
-                            <p className="mt-7 max-w-xl text-base leading-8 text-slate-600 dark:text-slate-400">
+                            <p className="mt-7 max-w-xl text-base leading-8 text-slate-400">
                                 Public keys can be registered with the account
                                 while private keys remain inside the browser
                                 device that created them.
@@ -2039,7 +2054,7 @@ max-md:top-[26%]
                             data-reveal
                             className="relative mx-auto grid w-full max-w-xl grid-cols-1 gap-4 md:grid-cols-3 md:items-end md:gap-5"
                         >
-                            <div className="relative flex min-h-[150px] flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-4 dark:border-white/[0.08] dark:bg-[#101317] md:h-[270px] md:rounded-[24px]">
+                            <div className="relative flex min-h-[150px] flex-col overflow-hidden rounded-[20px] border border-white/[0.08] bg-[#101317] p-4 md:h-[270px] md:rounded-[24px]">
                                 <div className="grid size-10 place-items-center rounded-xl bg-cyan-500/10 text-cyan-500">
                                     <Smartphone size={19} />
                                 </div>
@@ -2055,7 +2070,7 @@ max-md:top-[26%]
                                 </div>
                             </div>
 
-                            <div className="relative flex min-h-[170px] flex-col overflow-hidden rounded-[20px] border border-cyan-400/35 bg-white p-4 shadow-[0_24px_60px_rgba(6,182,212,0.1)] dark:bg-[#101317] md:h-[330px] md:rounded-[24px] md:shadow-[0_35px_90px_rgba(6,182,212,0.13)]">
+                            <div className="relative flex min-h-[170px] flex-col overflow-hidden rounded-[20px] border border-cyan-400/35 bg-[#101317] p-4 shadow-[0_24px_60px_rgba(6,182,212,0.1)] md:h-[330px] md:rounded-[24px] md:shadow-[0_35px_90px_rgba(6,182,212,0.13)]">
                                 <div className="grid size-10 place-items-center rounded-xl bg-cyan-500/10 text-cyan-500">
                                     <MonitorSmartphone size={19} />
                                 </div>
@@ -2071,7 +2086,7 @@ max-md:top-[26%]
                                 </div>
                             </div>
 
-                            <div className="relative flex min-h-[150px] flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white p-4 dark:border-white/[0.08] dark:bg-[#101317] md:h-[240px] md:rounded-[24px]">
+                            <div className="relative flex min-h-[150px] flex-col overflow-hidden rounded-[20px] border border-white/[0.08] bg-[#101317] p-4 md:h-[240px] md:rounded-[24px]">
                                 <div className="grid size-10 place-items-center rounded-xl bg-cyan-500/10 text-cyan-500">
                                     <KeyRound size={19} />
                                 </div>
@@ -2092,14 +2107,14 @@ max-md:top-[26%]
             </section>
 
             {/* Engineering */}
-            <section className="border-t border-slate-200/80 bg-white py-16 dark:border-white/[0.06] dark:bg-[#080A0C] md:py-32">
+            <section className="border-t border-white/[0.06] bg-[#080A0C] py-16 md:py-32">
                 <div className="mx-auto max-w-[1180px] px-4 sm:px-6">
                     <div
                         data-reveal
                         className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-24"
                     >
                         <div>
-                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-600 dark:text-cyan-400">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-400">
                                 Built as a real system
                             </p>
 
@@ -2107,7 +2122,7 @@ max-md:top-[26%]
                                 Not another messaging UI mockup.
                             </h2>
 
-                            <p className="mt-7 max-w-lg text-base leading-8 text-slate-600 dark:text-slate-400">
+                            <p className="mt-7 max-w-lg text-base leading-8 text-slate-400">
                                 Chatty is a full-stack engineering project by
                                 Mohamed Fateen, built around real
                                 authentication, persistence, cryptography and
@@ -2115,7 +2130,7 @@ max-md:top-[26%]
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 border-l border-t border-slate-200 dark:border-white/[0.08] sm:grid-cols-2">
+                        <div className="grid grid-cols-1 border-l border-t border-white/[0.08] sm:grid-cols-2">
                             {[
                                 ["Frontend", "React + Vite", Code2],
                                 ["Backend", "Spring Boot", Server],
@@ -2126,14 +2141,14 @@ max-md:top-[26%]
                             ].map(([label, value, Icon]) => (
                                 <div
                                     key={label}
-                                    className="min-h-36 border-b border-r border-slate-200 p-5 dark:border-white/[0.08] sm:p-7"
+                                    className="min-h-36 border-b border-r border-white/[0.08] p-5 sm:p-7"
                                 >
                                     <Icon
                                         size={20}
                                         className="text-cyan-500"
                                     />
 
-                                    <span className="mt-8 block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-600">
+                                    <span className="mt-8 block text-[10px] font-bold uppercase tracking-[0.15em] text-slate-600">
                     {label}
                   </span>
 
@@ -2186,19 +2201,19 @@ max-md:top-[26%]
             </section>
 
             {/* Footer */}
-            <footer className="border-t border-slate-200/80 bg-white py-8 dark:border-white/[0.06] dark:bg-[#080A0C]">
+            <footer className="border-t border-white/[0.06] bg-[#080A0C] py-8">
                 <div className="mx-auto flex max-w-[1180px] flex-col items-center justify-between gap-5 px-4 sm:flex-row sm:px-6">
                     <div className="flex items-center gap-2 text-sm font-semibold">
                         <MessageSquare className="size-4 text-cyan-500" />
                         Chatty
                     </div>
 
-                    <div className="flex items-center gap-6 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-6 text-[13px] font-medium text-slate-400">
                         <a
                             href="https://github.com/fateen1028-pixel/Chatty"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="transition-colors hover:text-slate-950 dark:hover:text-white"
+                            className="transition-colors hover:text-white"
                         >
                             GitHub
                         </a>
@@ -2207,13 +2222,13 @@ max-md:top-[26%]
                             href="https://fateen.dev/"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="transition-colors hover:text-slate-950 dark:hover:text-white"
+                            className="transition-colors hover:text-white"
                         >
                             Developer portfolio
                         </a>
                     </div>
 
-                    <p className="text-[12px] font-medium text-slate-400 dark:text-slate-600">
+                    <p className="text-[12px] font-medium text-slate-600">
                         Built by Mohamed Fateen © {currentYear}
                     </p>
                 </div>
