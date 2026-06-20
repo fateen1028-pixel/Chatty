@@ -81,6 +81,7 @@ public class SecurityConfig {
                         .requestMatchers("/key-backup/**").authenticated()
                         .requestMatchers("/device-approvals/**").authenticated()
                         .requestMatchers("/presence/**").authenticated()
+                        .requestMatchers("/api/profile/**").authenticated()
 
                         .anyRequest().authenticated()
                 

@@ -16,7 +16,9 @@ public record RecentChatDTO(
 
         String iv,
 
-        Instant createdAt
+        Instant createdAt,
+
+        String profileImageUrl
 
 ) {
 }

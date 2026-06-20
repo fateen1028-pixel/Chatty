@@ -1,13 +1,125 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, User, Camera, Lock, Mail, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProfileSettings() {
   const navigate = useNavigate();
   
-  const [username, setUsername] = useState('User'); // Dummy default
-  const [email, setEmail] = useState('user@example.com'); // Dummy default
+  const [username, setUsername] = useState(localStorage.getItem('username')); // Dummy default
+  const [email, setEmail] = useState(localStorage.getItem('email')); // Dummy default
   const [password, setPassword] = useState('');
+
+  const fileInputRef = useRef(null);
+
+  const [profileImageUrl, setProfileImageUrl] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+
+
+
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+
+        const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/profile/image`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+        );
+
+        if (!response.ok) {
+          throw new Error('Could not load profile image');
+        }
+
+        const data = await response.json();
+
+        setProfileImageUrl(data.profileImageUrl || '');
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadProfileImage();
+  }, []);
+
+
+  const handleAvatarChange = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setAvatarError('');
+
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setAvatarError('Only JPG, PNG and WebP images are allowed');
+      event.target.value = '';
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      setAvatarError('Image must be smaller than 5 MB');
+      event.target.value = '';
+      return;
+    }
+
+    const temporaryPreview = URL.createObjectURL(file);
+    setAvatarPreview(temporaryPreview);
+    setAvatarUploading(true);
+
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/profile/image`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: formData,
+          }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+
+        throw new Error(
+            errorData?.message || 'Profile image upload failed'
+        );
+      }
+
+      const data = await response.json();
+
+      setProfileImageUrl(data.profileImageUrl);
+      setAvatarPreview('');
+    } catch (error) {
+      console.error(error);
+      setAvatarPreview('');
+      setAvatarError(error.message);
+    } finally {
+      setAvatarUploading(false);
+      URL.revokeObjectURL(temporaryPreview);
+      event.target.value = '';
+    }
+  };
   
   const handleSaveProfile = (e) => {
     e.preventDefault();
@@ -41,14 +153,49 @@ export default function ProfileSettings() {
           
           {/* Avatar Section */}
           <div className="bg-white dark:bg-[#1A1A1D] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center">
-            <div className="relative group cursor-pointer mb-4">
-              <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden ring-4 ring-white dark:ring-[#0B0C0E]">
-                <User size={40} className="text-slate-400" />
-              </div>
-              <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera size={24} className="text-white" />
-              </div>
+            <div className="relative mb-4">
+              <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={avatarUploading}
+                  className="relative group rounded-full disabled:cursor-not-allowed"
+                  aria-label="Change profile image"
+              >
+                <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden ring-4 ring-white dark:ring-[#0B0C0E]">
+                  {avatarPreview || profileImageUrl ? (
+                      <img
+                          src={avatarPreview || profileImageUrl}
+                          alt={`${username}'s profile`}
+                          className="w-full h-full object-cover"
+                      />
+                  ) : (
+                      <User size={40} className="text-slate-400" />
+                  )}
+                </div>
+
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {avatarUploading ? (
+                      <div className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  ) : (
+                      <Camera size={24} className="text-white" />
+                  )}
+                </div>
+              </button>
+
+              <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+              />
             </div>
+
+            {avatarError && (
+                <p className="mb-3 text-sm text-red-500">
+                  {avatarError}
+                </p>
+            )}
             <h2 className="font-semibold text-lg">{username}</h2>
             <p className="text-slate-500 text-sm">{email}</p>
             {/* TODO: API URL for avatar upload: POST /users/avatar */}

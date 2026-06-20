@@ -11,6 +11,7 @@ import com.fateen.chatapplicationbackend.chat.dto.MessageStatus;
 import com.fateen.chatapplicationbackend.device.repository.DeviceRepository;
 import com.fateen.chatapplicationbackend.chat.repository.MessageDeviceKeyRepository;
 import com.fateen.chatapplicationbackend.chat.repository.MessageRepo;
+import com.fateen.chatapplicationbackend.profile.service.SupabaseStorageService;
 import com.fateen.chatapplicationbackend.useraction.repository.UserActionRepo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -32,13 +33,16 @@ public class MessageService {
 
     private final DeviceRepository deviceRepository;
 
+    private final SupabaseStorageService storageService;
 
-    public MessageService(MessageRepo messageRepo, UserActionRepo userActionRepo, SimpMessagingTemplate messagingTemplate, MessageDeviceKeyRepository messageDeviceKeyRepository, DeviceRepository deviceRepository) {
+
+    public MessageService(MessageRepo messageRepo, UserActionRepo userActionRepo, SimpMessagingTemplate messagingTemplate, MessageDeviceKeyRepository messageDeviceKeyRepository, DeviceRepository deviceRepository, SupabaseStorageService storageService) {
         this.messageRepo = messageRepo;
         this.userActionRepo = userActionRepo;
         this.messagingTemplate=messagingTemplate;
         this.messageDeviceKeyRepository = messageDeviceKeyRepository;
         this.deviceRepository = deviceRepository;
+        this.storageService = storageService;
     }
 
     private void notifyAllDevices(
@@ -404,7 +408,10 @@ public class MessageService {
                             message.getCiphertext(),
                             key.map(MessageDeviceKey::getEncryptedAesKey).orElse(null),
                             message.getIv(),
-                            message.getCreatedAt()
+                            message.getCreatedAt(),
+                            storageService.getPublicUrl(
+                                    otherUser.getProfileImagePath()
+                            )
                     )
             );
         }
